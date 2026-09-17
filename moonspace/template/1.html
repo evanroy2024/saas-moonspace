@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- ============================================================
+  View Switcher FAB — bottom-left, Apple-style popup with 3 options
+  Drop this block anywhere in a page. Self-contained styles + script.
+  Swap the 3 href values for your real URLs (or {% url %} tags in Django).
+============================================================= -->
+
+<div class="viewSwitch" id="viewSwitch">
+  <div class="vs-menu" id="vsMenu">
+    <a class="vs-item" href="#2d">
+      <span class="vs-icon" style="background:linear-gradient(155deg,#bfe0ff,#4da3ff 60%,#1c5fa8);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/></svg>
+      </span>
+      2D View
+    </a>
+    <a class="vs-item active" href="#3d">
+      <span class="vs-icon" style="background:linear-gradient(155deg,#ffd7de,#ff7a94 60%,#b23a56);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="8" ry="3.2"/></svg>
+      </span>
+      3D View
+    </a>
+    <a class="vs-item" href="#plot">
+      <span class="vs-icon" style="background:linear-gradient(155deg,#ffe9b8,#f0b84c 60%,#a5731c);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      </span>
+      Plot View
+    </a>
+  </div>
+  <button class="vs-fab" id="vsFab" title="Switch view" aria-label="Switch view">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+</div>
+
+<style>
+  :root{
+    --vs-panel:rgba(12,16,23,0.80); --vs-panel-border:rgba(255,255,255,0.09);
+    --vs-ink:#f3efe6; --vs-rose:#ff7a94;
+  }
+
+  .viewSwitch{ position:fixed; left:18px; bottom:18px; z-index:1200; display:flex; flex-direction:column; align-items:flex-start; gap:10px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; }
+
+  .vs-menu{ display:flex; flex-direction:column-reverse; gap:9px; }
+
+  .vs-item{
+    display:flex; align-items:center; gap:10px; padding:8px 18px 8px 8px; border-radius:26px;
+    font-size:12.5px; font-weight:600; color:var(--vs-ink); text-decoration:none; white-space:nowrap;
+    background:var(--vs-panel); border:1px solid var(--vs-panel-border);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    box-shadow:0 12px 24px -12px rgba(0,0,0,0.65);
+    opacity:0; transform:translateY(10px) scale(0.9); pointer-events:none;
+    transition:opacity 0.22s ease, transform 0.3s cubic-bezier(.34,1.56,.64,1), border-color 0.15s ease, background 0.15s ease;
+  }
+  .viewSwitch.open .vs-item{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
+  .viewSwitch.open .vs-item:nth-child(1){ transition-delay:0.09s; }
+  .viewSwitch.open .vs-item:nth-child(2){ transition-delay:0.045s; }
+  .viewSwitch.open .vs-item:nth-child(3){ transition-delay:0s; }
+  .vs-item:hover{ border-color:rgba(255,255,255,0.22); background:rgba(255,255,255,0.06); transform:translateX(2px); }
+
+  .vs-icon{ width:30px; height:30px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; color:#08131f; }
+
+  .vs-item.active{ border-color:rgba(255,122,148,0.5); box-shadow:0 12px 24px -10px rgba(255,122,148,0.45), 0 0 0 1px rgba(255,122,148,0.18) inset; }
+
+  .vs-fab{
+    width:52px; height:52px; border-radius:50%; background:var(--vs-panel); border:1px solid var(--vs-panel-border);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    display:flex; align-items:center; justify-content:center; color:var(--vs-ink); cursor:pointer;
+    box-shadow:0 14px 30px -12px rgba(0,0,0,0.75);
+    transition:transform 0.2s cubic-bezier(.34,1.56,.64,1), background 0.2s ease, border-color 0.2s ease;
+  }
+  .vs-fab:active{ transform:scale(0.92); }
+  .vs-fab svg{ transition:transform 0.25s ease; }
+  .viewSwitch.open .vs-fab{ background:var(--vs-rose); border-color:var(--vs-rose); }
+  .viewSwitch.open .vs-fab svg{ transform:rotate(135deg); }
+</style>
+
+<script>
+(function(){
+  var viewSwitch = document.getElementById('viewSwitch');
+  document.getElementById('vsFab').addEventListener('click', function(e){
+    e.stopPropagation();
+    viewSwitch.classList.toggle('open');
+  });
+  document.addEventListener('click', function(e){
+    if(viewSwitch.classList.contains('open') && !viewSwitch.contains(e.target)){
+      viewSwitch.classList.remove('open');
+    }
+  });
+})();
+</script>
+</body>
+</html>

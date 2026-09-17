@@ -1,0 +1,517 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moonspace — A Bloom For {{ plot.receiver_name|default:"You" }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Italiana&family=Lora:ital,wght@0,400;0,500;1,400&family=Parisienne&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<style>
+  :root{
+    --ivory:#fbf3ec;
+    --ivory2:#f6e8de;
+    --blush:#f3d7d1;
+    --blush-deep:#e6b9b6;
+    --rose:#c1596a;
+    --rose-deep:#8f3346;
+    --gold:#c9a15a;
+    --gold-light:#e9cd93;
+    --gold-deep:#a17c3c;
+    --plum:#4a2438;
+    --plum-soft:#7a4a58;
+    --paper:#fffaf4;
+    --paper2:#f8e9dc;
+    --serif-display:'Italiana',Georgia,serif;
+    --serif-body:'Lora',Georgia,serif;
+    --script:'Parisienne',cursive;
+    --sans:'Jost',-apple-system,sans-serif;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; min-height:100%; }
+  body{ font-family:var(--serif-body); color:var(--plum); position:relative; overflow-x:hidden; overflow-y:auto; -webkit-font-smoothing:antialiased; }
+
+  /* ================= BACKGROUND ================= */
+  .bg{ position:fixed; inset:0; z-index:0;
+    background:
+      radial-gradient(ellipse 55% 42% at 12% 8%, rgba(230,185,182,0.55), transparent 62%),
+      radial-gradient(ellipse 50% 40% at 92% 6%, rgba(201,161,90,0.28), transparent 60%),
+      radial-gradient(ellipse 60% 48% at 88% 96%, rgba(193,89,106,0.20), transparent 62%),
+      radial-gradient(ellipse 55% 45% at 6% 96%, rgba(201,161,90,0.22), transparent 60%),
+      linear-gradient(175deg, var(--ivory) 0%, var(--ivory2) 55%, #f2e2d4 100%);
+    background-size:130% 130%;
+    animation:driftBg 32s ease-in-out infinite alternate;
+  }
+  @keyframes driftBg{ from{ background-position:0% 0%; } to{ background-position:14% 10%; } }
+  @media (prefers-reduced-motion: reduce){ .bg{ animation:none; } }
+
+  .petal-drift{ position:fixed; z-index:1; pointer-events:none; border-radius:60% 40% 55% 45%/45% 55% 40% 60%; opacity:0; animation:petalFall linear infinite; }
+  @keyframes petalFall{ 0%{ transform:translateY(-8vh) rotate(0deg); opacity:0; } 10%{ opacity:0.75; } 90%{ opacity:0.4; } 100%{ transform:translateY(102vh) rotate(220deg); opacity:0; } }
+
+  .corner-spray{ position:fixed; z-index:1; pointer-events:none; opacity:0.85; }
+  .corner-spray.tl{ top:-18px; left:-18px; width:150px; }
+  .corner-spray.br{ bottom:-18px; right:-18px; width:170px; transform:rotate(180deg); }
+
+  /* ================= STAGE ================= */
+  .stage{ position:relative; z-index:2; min-height:100vh; height:auto; display:flex; align-items:center; justify-content:center; padding:30px 16px 60px; }
+  .scene{ position:relative; width:100%; max-width:420px; text-align:center; }
+
+  /* ---------- pre-open: hanging tag + bow ---------- */
+  .intro{ opacity:0; display:flex; flex-direction:column; align-items:center; animation:riseIn .9s ease .1s forwards; }
+  @keyframes riseIn{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:translateY(0); } }
+
+  .intro h1{ font-family:var(--serif-display); font-weight:400; font-size:clamp(25px,5.8vw,33px); line-height:1.35; letter-spacing:0.01em; margin:0 0 10px; color:var(--plum); }
+  .intro .sub{ font-family:var(--serif-body); font-style:italic; font-size:14.5px; color:var(--plum-soft); margin:0 0 30px; max-width:300px; }
+
+  /* ---------- ribbon + tag composition ---------- */
+  .ribbon-scene{ position:relative; width:220px; height:250px; margin-bottom:8px; cursor:pointer; }
+
+  .ribbon-strap{ position:absolute; left:50%; top:0; width:34px; height:120px; margin-left:-17px;
+    background:linear-gradient(90deg, var(--rose-deep), var(--rose) 45%, var(--rose-deep));
+    box-shadow:0 10px 20px -10px rgba(143,51,70,0.5); z-index:2; transform-origin:50% 0%; transition:transform .6s ease, opacity .6s ease; }
+  .ribbon-strap::before{ content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(255,255,255,0.25), transparent 30%); }
+
+  .tag{ position:absolute; left:50%; top:112px; width:118px; height:150px; margin-left:-59px; z-index:1;
+    background:linear-gradient(160deg,var(--paper),var(--paper2)); border-radius:6px;
+    box-shadow:0 24px 44px -18px rgba(74,36,56,0.45), inset 0 0 0 1px rgba(201,161,90,0.35);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:14px; }
+  .tag::before{ content:''; position:absolute; top:10px; left:50%; width:9px; height:9px; margin-left:-4.5px; border-radius:50%; background:var(--ivory); box-shadow:inset 0 0 0 1.5px var(--gold-deep); }
+  .tag-num{ font-family:var(--sans); font-size:10px; letter-spacing:0.04em; color:var(--gold-deep); margin-top:8px; }
+  .tag-glyph{ width:26px; height:26px; opacity:0.8; }
+  .tag-word{ font-family:var(--serif-display); font-size:13px; color:var(--rose-deep); letter-spacing:0.02em; }
+
+  .bow{ position:absolute; left:50%; top:96px; width:100px; height:44px; margin-left:-50px; z-index:4;
+    filter:drop-shadow(0 8px 12px rgba(143,51,70,0.35)); transform-origin:50% 60%; transition:transform .5s ease, opacity .5s ease; }
+  .bow .loop{ position:absolute; top:2px; width:44px; height:44px; background:linear-gradient(150deg,var(--gold-light),var(--rose) 55%,var(--rose-deep)); }
+  .bow .loop.left{ left:0; border-radius:65% 65% 65% 10px; transform:rotate(-24deg); }
+  .bow .loop.right{ right:0; border-radius:65% 65% 10px 65%; transform:rotate(24deg); }
+  .bow .knot{ position:absolute; left:50%; top:15px; width:20px; height:20px; transform:translateX(-50%) rotate(45deg);
+    background:linear-gradient(135deg,var(--gold-light),var(--gold-deep)); border-radius:4px; }
+  .bow .tail{ position:absolute; top:30px; width:11px; height:34px; background:linear-gradient(180deg,var(--rose),var(--rose-deep)); }
+  .bow .tail.left{ left:32px; border-radius:0 0 6px 6px; transform:rotate(-8deg); }
+  .bow .tail.right{ right:32px; border-radius:0 0 6px 6px; transform:rotate(8deg); }
+
+  .ribbon-scene:hover .bow{ transform:scale(1.03); }
+  .ribbon-hint{ font-family:var(--sans); font-size:11.5px; color:var(--plum-soft); letter-spacing:0.02em; margin-top:2px; }
+
+  /* untie sequence */
+  .ribbon-scene.open .bow{ animation:bowUntie .7s cubic-bezier(.3,.6,.35,1) forwards; }
+  @keyframes bowUntie{ 0%{ transform:translateY(0) rotate(0) scale(1); opacity:1; } 100%{ transform:translateY(-70px) rotate(-35deg) scale(0.35); opacity:0; } }
+  .ribbon-scene.open .ribbon-strap{ animation:strapFall .6s ease .1s forwards; }
+  @keyframes strapFall{ 0%{ transform:translateY(0) rotate(0); opacity:1; } 100%{ transform:translateY(20px) rotate(14deg); opacity:0; } }
+  .ribbon-scene.open .tag{ animation:tagSettle .5s ease .2s forwards; }
+  @keyframes tagSettle{ 0%{ transform:translateY(0) rotate(0); } 45%{ transform:translateY(4px) rotate(-2deg); } 100%{ transform:translateY(2px) rotate(0); } }
+
+  .fade-out{ animation:sceneFade .55s ease forwards; }
+  @keyframes sceneFade{ to{ opacity:0; transform:scale(0.95); } }
+
+  /* ================= KEEPSAKE CARD ================= */
+  .card-wrap{ opacity:0; filter:blur(6px); transform:translateY(40px) scale(0.94);
+    transition:opacity 1.5s cubic-bezier(.16,.84,.24,1), transform 1.5s cubic-bezier(.16,.84,.24,1), filter 1.5s ease;
+    pointer-events:none; width:100%; }
+  .card-wrap.show{ opacity:1; filter:blur(0); transform:translateY(0) scale(1); pointer-events:auto; }
+
+  .card{ position:relative; margin:0 auto; max-width:390px; padding:44px 30px 32px; border-radius:22px; overflow:hidden;
+    background:linear-gradient(165deg, var(--paper) 0%, var(--paper2) 100%);
+    box-shadow:0 48px 88px -30px rgba(74,36,56,0.55), 0 0 0 1px rgba(255,255,255,0.5); }
+  .card::before{ content:''; position:absolute; inset:9px; border:1px solid rgba(201,161,90,0.4); border-radius:15px; pointer-events:none; z-index:2; }
+  .card > *{ position:relative; z-index:1; }
+
+  .sprig{ position:absolute; width:56px; z-index:2; opacity:0.9; pointer-events:none; }
+  .sprig.tl{ top:10px; left:10px; }
+  .sprig.tr{ top:10px; right:10px; transform:scaleX(-1); }
+  .sprig.bl{ bottom:10px; left:10px; transform:scaleY(-1); }
+  .sprig.br{ bottom:10px; right:10px; transform:scale(-1,-1); }
+
+  .wreath{ position:relative; width:104px; height:104px; margin:0 auto 18px; }
+  .wreath svg{ position:absolute; inset:0; width:100%; height:100%; }
+  .wreath-photo{ position:absolute; inset:16px; border-radius:50%; overflow:hidden; box-shadow:0 10px 22px -8px rgba(74,36,56,0.4); }
+  .wreath-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  .tag-line{ display:inline-block; font-family:var(--sans); font-size:10.5px; letter-spacing:0.05em; color:var(--gold-deep);
+    background:rgba(201,161,90,0.13); border:1px solid rgba(201,161,90,0.4); padding:5px 14px; border-radius:100px; margin:0 0 18px; }
+
+  .card-title{ font-family:var(--serif-display); font-weight:400; font-size:23px; line-height:1.5; margin:0 0 14px; color:var(--plum); }
+  .name-hl{ font-family:var(--script); font-size:30px; color:var(--rose-deep); line-height:1; display:inline-block; padding:0 2px; }
+
+  .card-msg{ font-family:var(--serif-body); font-style:italic; font-size:14.5px; line-height:1.8; color:var(--plum-soft); margin:0 0 20px; }
+
+  .card-sign{ font-family:var(--script); font-size:26px; color:var(--rose-deep); text-align:right; margin:0 0 20px; }
+
+  .card-divider{ position:relative; height:1px; background:linear-gradient(90deg, transparent, rgba(201,161,90,0.6), transparent); margin:0 0 22px; }
+  .card-divider::after{ content:''; position:absolute; left:50%; top:50%; width:16px; height:16px; transform:translate(-50%,-50%); background:var(--paper2); }
+  .flower-glyph{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:16px; height:16px; }
+
+  /* eye-catching primary CTA */
+  .plot-btn{ display:inline-flex; align-items:center; gap:8px; text-decoration:none; color:#3d1a12;
+    font-family:var(--sans); font-weight:600; font-size:13.5px; letter-spacing:0.02em; padding:12px 26px; border-radius:100px;
+    background:linear-gradient(150deg,var(--gold-light), var(--gold) 55%, var(--gold-deep));
+    box-shadow:0 16px 28px -12px rgba(201,161,90,0.65), inset 0 1px 0 rgba(255,255,255,0.55);
+    animation:plotPulse 2.8s ease-in-out infinite; transition:transform .18s ease, box-shadow .2s ease; margin-bottom:26px; }
+  .plot-btn:hover{ transform:translateY(-2px); }
+  .plot-btn:active{ transform:translateY(0) scale(0.97); }
+  @keyframes plotPulse{ 0%,100%{ box-shadow:0 16px 28px -12px rgba(201,161,90,0.65), inset 0 1px 0 rgba(255,255,255,0.55); } 50%{ box-shadow:0 18px 34px -10px rgba(201,161,90,0.9), inset 0 1px 0 rgba(255,255,255,0.55); } }
+  @media (prefers-reduced-motion: reduce){ .plot-btn{ animation:none; } }
+
+  .share-block{ margin-top:4px; }
+  .share-label{ font-family:var(--sans); font-size:10.5px; letter-spacing:0.08em; color:var(--plum-soft); opacity:0.8; margin-bottom:12px; }
+  .share-row{ display:flex; align-items:center; justify-content:center; gap:15px; }
+  .share-icon{ display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%;
+    background:rgba(255,255,255,0.55); border:1px solid rgba(201,161,90,0.4); color:var(--rose-deep); cursor:pointer;
+    text-decoration:none; transition:transform .18s ease, box-shadow .18s ease, background .18s ease; position:relative; }
+  .share-icon svg{ width:18px; height:18px; }
+  .share-icon:hover{ transform:translateY(-3px) scale(1.06); box-shadow:0 10px 20px -8px rgba(74,36,56,0.3); background:rgba(255,255,255,0.9); }
+  .share-icon.whatsapp{ color:#25D366; }
+  .share-icon.facebook{ color:#1877F2; }
+  .share-icon.instagram{ color:#C1379A; }
+  .share-icon.tiktok{ color:#2a1c22; }
+  .toast{ position:absolute; bottom:50px; left:50%; transform:translateX(-50%) translateY(4px); background:var(--plum); color:var(--ivory);
+    font-size:11px; padding:6px 11px; border-radius:8px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease; }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ---- outer action buttons ---- */
+  .outer-actions{ display:flex; gap:14px; justify-content:center; align-items:stretch; margin-top:26px; flex-wrap:nowrap; }
+  .outer-btn{ display:inline-flex; align-items:center; justify-content:center; gap:10px; padding:12px 20px 12px 12px; border-radius:100px;
+    font-family:var(--sans); font-weight:600; font-size:13px; cursor:pointer; text-decoration:none; flex:1 1 0;
+    min-width:0; white-space:nowrap; transition:transform .2s ease, box-shadow .25s ease, background .2s ease; border:none; }
+  .outer-btn .ico{ display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; flex-shrink:0; }
+  .outer-btn svg{ width:14px; height:14px; }
+  .outer-actions.single .outer-btn{ flex:0 1 auto; }
+
+  .outer-btn.download{ color:var(--ivory); background:linear-gradient(150deg, var(--rose), var(--rose-deep));
+    box-shadow:0 16px 30px -14px rgba(143,51,70,0.55), inset 0 1px 0 rgba(255,255,255,0.25); }
+  .outer-btn.download .ico{ background:rgba(255,255,255,0.22); color:var(--ivory); }
+  .outer-btn.download:hover{ transform:translateY(-3px); box-shadow:0 20px 38px -14px rgba(143,51,70,0.7); }
+
+  .outer-btn.reply{ color:var(--plum); background:linear-gradient(150deg, rgba(255,255,255,0.75), rgba(255,255,255,0.4));
+    border:1px solid rgba(201,161,90,0.5); box-shadow:0 16px 30px -16px rgba(74,36,56,0.3); }
+  .outer-btn.reply .ico{ background:rgba(201,161,90,0.18); color:var(--rose-deep); }
+  .outer-btn.reply:hover{ transform:translateY(-3px); background:rgba(255,255,255,0.9); }
+
+  .outer-btn:active{ transform:scale(0.97); }
+  .outer-btn.loading{ pointer-events:none; opacity:0.85; }
+  .outer-btn.loading .ico svg{ animation:spin 0.9s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* ---- music toggle ---- */
+  .music-toggle{ position:fixed; top:16px; right:16px; z-index:9; display:flex; align-items:center; gap:7px;
+    padding:8px 14px; border-radius:100px; background:rgba(255,255,255,0.55); border:1px solid rgba(201,161,90,0.4);
+    color:var(--plum); font-size:11.5px; font-family:var(--sans); font-weight:600; cursor:pointer; backdrop-filter:blur(6px); }
+  .music-toggle svg{ width:14px; height:14px; }
+  .note-bars{ display:flex; align-items:flex-end; gap:2px; height:11px; }
+  .note-bars span{ width:2.5px; background:var(--rose-deep); border-radius:2px; animation:barBounce 0.9s ease-in-out infinite; }
+  .note-bars span:nth-child(1){ height:5px; animation-delay:0s; }
+  .note-bars span:nth-child(2){ height:10px; animation-delay:.15s; }
+  .note-bars span:nth-child(3){ height:7px; animation-delay:.3s; }
+  .music-toggle.paused .note-bars span{ animation-play-state:paused; height:3px; }
+  @keyframes barBounce{ 0%,100%{ transform:scaleY(0.4); } 50%{ transform:scaleY(1); } }
+
+  [hidden]{ display:none !important; }
+
+  @media (max-width:380px){
+    .ribbon-scene{ width:190px; height:230px; }
+    .card{ padding:38px 20px 26px; }
+    .outer-actions{ gap:8px; }
+    .outer-btn{ padding:11px 14px 11px 10px; font-size:11.5px; }
+    .outer-btn svg{ width:12px; height:12px; }
+    .outer-btn .ico{ width:26px; height:26px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+
+<svg class="corner-spray tl" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
+  <g fill="none" stroke="#c9a15a" stroke-width="1.2" opacity="0.5">
+    <path d="M5 5c20 6 34 20 40 40"/>
+    <path d="M5 5c14 18 18 34 14 54"/>
+  </g>
+  <g fill="#e6b9b6" opacity="0.75">
+    <circle cx="14" cy="16" r="7"/><circle cx="24" cy="10" r="6"/><circle cx="30" cy="22" r="6.5"/><circle cx="16" cy="28" r="5.5"/><circle cx="8" cy="24" r="5"/>
+  </g>
+  <g fill="#c1596a" opacity="0.6">
+    <circle cx="46" cy="46" r="4.5"/><circle cx="54" cy="52" r="3.5"/>
+  </g>
+</svg>
+<svg class="corner-spray br" viewBox="0 0 170 170" xmlns="http://www.w3.org/2000/svg">
+  <g fill="none" stroke="#c9a15a" stroke-width="1.2" opacity="0.5">
+    <path d="M5 5c22 7 38 22 44 44"/>
+    <path d="M5 5c16 20 20 38 15 60"/>
+  </g>
+  <g fill="#e9cd93" opacity="0.7">
+    <circle cx="16" cy="18" r="8"/><circle cx="27" cy="11" r="6.5"/><circle cx="34" cy="24" r="7"/><circle cx="18" cy="31" r="6"/><circle cx="8" cy="26" r="5.5"/>
+  </g>
+  <g fill="#c1596a" opacity="0.55">
+    <circle cx="50" cy="50" r="5"/><circle cx="60" cy="58" r="4"/>
+  </g>
+</svg>
+
+<span class="petal-drift" style="left:10%;width:9px;height:7px;background:var(--blush-deep);animation-duration:14s;animation-delay:0s;"></span>
+<span class="petal-drift" style="left:26%;width:7px;height:6px;background:var(--gold-light);animation-duration:17s;animation-delay:3s;"></span>
+<span class="petal-drift" style="left:48%;width:8px;height:6px;background:var(--rose);animation-duration:15s;animation-delay:6s;"></span>
+<span class="petal-drift" style="left:68%;width:7px;height:6px;background:var(--blush-deep);animation-duration:16s;animation-delay:2s;"></span>
+<span class="petal-drift" style="left:84%;width:9px;height:7px;background:var(--gold-light);animation-duration:18s;animation-delay:5s;"></span>
+<span class="petal-drift" style="left:94%;width:6px;height:5px;background:var(--rose);animation-duration:13s;animation-delay:8s;"></span>
+
+{% if plot.song %}
+<div class="music-toggle" id="musicToggle" hidden>
+  <div class="note-bars"><span></span><span></span><span></span></div>
+  <span id="musicLabel">Music</span>
+</div>
+<audio id="bgAudio" loop preload="none">
+  <source src="{% static 'songs/' %}{{ plot.song }}.mp3" type="audio/mpeg">
+</audio>
+{% endif %}
+
+<div class="stage">
+  <div class="scene">
+
+    <div class="intro" id="intro">
+      <h1>A bloom picked<br>just for you.</h1>
+      <p class="sub">Pull the ribbon to unwrap it.</p>
+
+      <div class="ribbon-scene" id="ribbonScene">
+        <div class="ribbon-strap"></div>
+        <div class="bow">
+          <div class="loop left"></div><div class="loop right"></div><div class="knot"></div>
+          <div class="tail left"></div><div class="tail right"></div>
+        </div>
+        <div class="tag">
+          <svg class="tag-glyph" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <g fill="#c1596a" opacity="0.85">
+              <circle cx="16" cy="10" r="5.4"/><circle cx="24" cy="16" r="5"/><circle cx="16" cy="23" r="5.2"/><circle cx="8" cy="16" r="5"/>
+            </g>
+            <circle cx="16" cy="16" r="3.4" fill="#c9a15a"/>
+          </svg>
+          <div class="tag-word">Moonspace</div>
+          <div class="tag-num">No. {{ plot.plot_number }}</div>
+        </div>
+      </div>
+      <div class="ribbon-hint">tap the bow</div>
+    </div>
+
+    <div class="card-wrap" id="cardWrap" hidden>
+      <div class="card" id="giftCard">
+        <svg class="sprig tl" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 4c12 3 20 12 24 24" fill="none" stroke="#c9a15a" stroke-width="1.1"/>
+          <g fill="#e6b9b6"><circle cx="10" cy="9" r="5"/><circle cx="17" cy="5" r="4"/><circle cx="21" cy="13" r="4.4"/><circle cx="11" cy="17" r="3.6"/></g>
+          <circle cx="34" cy="34" r="2.6" fill="#c1596a"/>
+        </svg>
+        <svg class="sprig tr" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 4c12 3 20 12 24 24" fill="none" stroke="#c9a15a" stroke-width="1.1"/>
+          <g fill="#e9cd93"><circle cx="10" cy="9" r="5"/><circle cx="17" cy="5" r="4"/><circle cx="21" cy="13" r="4.4"/><circle cx="11" cy="17" r="3.6"/></g>
+          <circle cx="34" cy="34" r="2.6" fill="#c1596a"/>
+        </svg>
+        <svg class="sprig bl" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 4c12 3 20 12 24 24" fill="none" stroke="#c9a15a" stroke-width="1.1"/>
+          <g fill="#c1596a" opacity="0.75"><circle cx="10" cy="9" r="5"/><circle cx="17" cy="5" r="4"/><circle cx="21" cy="13" r="4.4"/><circle cx="11" cy="17" r="3.6"/></g>
+          <circle cx="34" cy="34" r="2.6" fill="#c9a15a"/>
+        </svg>
+        <svg class="sprig br" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 4c12 3 20 12 24 24" fill="none" stroke="#c9a15a" stroke-width="1.1"/>
+          <g fill="#e6b9b6"><circle cx="10" cy="9" r="5"/><circle cx="17" cy="5" r="4"/><circle cx="21" cy="13" r="4.4"/><circle cx="11" cy="17" r="3.6"/></g>
+          <circle cx="34" cy="34" r="2.6" fill="#c1596a"/>
+        </svg>
+
+        <div class="wreath">
+          <svg viewBox="0 0 104 104" xmlns="http://www.w3.org/2000/svg">
+            <g id="wreathPetals"></g>
+          </svg>
+          <div class="wreath-photo">
+            {% if plot.image %}
+              <img src="{{ plot.image.url }}" alt="Moonspace keepsake image">
+            {% else %}
+              <img src="https://picsum.photos/seed/moon-c/200/200" alt="Moonspace keepsake image">
+            {% endif %}
+          </div>
+        </div>
+
+        <div><span class="tag-line">KEEPSAKE No. {{ plot.plot_number }} · <span id="regionText"></span></span></div>
+
+        <h2 class="card-title">A little piece of the sky,<br>gathered for <span class="name-hl">{{ plot.receiver_name|default:"you" }}</span></h2>
+
+        <p class="card-msg">Flowers fade by morning, but this won't. Somewhere above us there's a small, quiet place that's yours now — chosen the way you'd choose the prettiest bloom in the shop, and kept exactly as carefully.</p>
+
+        <div class="card-sign">{{ plot.buyer_name }}</div>
+
+        <div class="card-divider">
+          <svg class="flower-glyph" viewBox="0 0 16 16"><g fill="#c1596a"><circle cx="8" cy="4.2" r="2.4"/><circle cx="11.8" cy="8" r="2.4"/><circle cx="8" cy="11.8" r="2.4"/><circle cx="4.2" cy="8" r="2.4"/></g><circle cx="8" cy="8" r="1.6" fill="#c9a15a"/></svg>
+        </div>
+
+        <a class="replay-btn" href="/your/{{ plot.url }}/"> 
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+          View Plot
+        </a>
+
+        <div class="share-block">
+          <div class="share-label" style="text-align:center;">SHARE THIS MOMENT</div>
+          <div class="share-row">
+            <a class="share-icon whatsapp" id="shareWhatsapp" title="Share on WhatsApp" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.39 1.26 4.81L2 22l5.42-1.36a9.86 9.86 0 0 0 4.62 1.15h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm0 18.06h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.11.8.83-3.03-.2-.31a8.1 8.1 0 0 1-1.25-4.28c0-4.5 3.66-8.16 8.16-8.16 2.18 0 4.23.85 5.77 2.4a8.1 8.1 0 0 1 2.39 5.77c0 4.5-3.66 8.14-8.09 8.14zm4.47-6.11c-.24-.12-1.44-.71-1.66-.79-.22-.08-.39-.12-.55.12-.16.24-.63.79-.78.95-.14.16-.29.18-.53.06-.24-.12-1.03-.38-1.96-1.21-.72-.65-1.21-1.44-1.35-1.68-.14-.24-.02-.37.11-.49.11-.11.24-.29.36-.43.12-.14.16-.24.24-.4.08-.16.04-.31-.02-.43-.06-.12-.55-1.32-.75-1.81-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.43.06-.65.31-.22.24-.86.84-.86 2.05 0 1.21.88 2.38 1 2.54.12.16 1.73 2.64 4.2 3.7.59.25 1.05.4 1.41.51.59.19 1.13.16 1.55.1.47-.07 1.44-.59 1.65-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28z"/></svg>
+            </a>
+            <a class="share-icon facebook" id="shareFacebook" title="Share on Facebook" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12.06C22 6.5 17.52 2 12 2S2 6.5 2 12.06c0 5.02 3.66 9.18 8.44 9.94v-7.03H7.9v-2.91h2.54V9.85c0-2.51 1.49-3.9 3.77-3.9 1.09 0 2.24.2 2.24.2v2.47h-1.26c-1.24 0-1.63.78-1.63 1.57v1.87h2.78l-.44 2.91h-2.34V22c4.78-.76 8.44-4.92 8.44-9.94z"/></svg>
+            </a>
+            <a class="share-icon instagram" id="shareInstagram" title="Share on Instagram" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.3"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>
+              <span class="toast" id="toastInstagram">Link copied!</span>
+            </a>
+            <a class="share-icon tiktok" id="shareTiktok" title="Share on TikTok" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 2h-3.2v13.2a2.9 2.9 0 1 1-2.06-2.78V9.16a6.1 6.1 0 1 0 5.26 6.04V8.6a7.6 7.6 0 0 0 4.4 1.4V6.8a4.3 4.3 0 0 1-4.4-4.3V2z"/></svg>
+              <span class="toast" id="toastTiktok">Link copied!</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="outer-actions{% if not plot.wants_reply %} single{% endif %}">
+        <button class="outer-btn download" id="downloadBtn">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg></span>
+          <span class="label">Download keepsake</span>
+        </button>
+        {% if plot.wants_reply %}
+        <a class="outer-btn reply" id="replyBtn" href="#">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M10 8L3 12l7 4M3 12h11a6 6 0 0 1 6 6v1"/></svg></span>
+          <span class="label">Reply back</span>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  var regions = ['Sea of Tranquility', 'Sea of Serenity', 'Ocean of Storms', 'Lake of Dreams', 'Bay of Rainbows', 'Sea of Nectar'];
+  var region = regions[Math.floor(Math.random() * regions.length)];
+  document.getElementById('regionText').textContent = region;
+
+  var petalColors = ['#e6b9b6','#e9cd93','#c1596a'];
+  var g = document.getElementById('wreathPetals');
+  var n = 10;
+  for(var i=0;i<n;i++){
+    var angle = (Math.PI * 2 * i / n) - Math.PI/2;
+    var cx = 52 + Math.cos(angle) * 43;
+    var cy = 52 + Math.sin(angle) * 43;
+    var c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx', cx.toFixed(1));
+    c.setAttribute('cy', cy.toFixed(1));
+    c.setAttribute('r', (i % 2 === 0 ? 6.5 : 5));
+    c.setAttribute('fill', petalColors[i % petalColors.length]);
+    c.setAttribute('opacity', '0.9');
+    g.appendChild(c);
+  }
+})();
+</script>
+
+<script>
+(function(){
+  var recipientName = "{{ plot.receiver_name|default:'you'|escapejs }}";
+  var senderName = "{{ plot.buyer_name|escapejs }}";
+  var plotNo = "{{ plot.plot_number|escapejs }}";
+  var shareText = senderName + ' picked a piece of the Moon just for ' + recipientName + ' \u2014 take a look:';
+  var pageUrl = window.location.href;
+
+  document.getElementById('shareWhatsapp').href = 'https://wa.me/?text=' + encodeURIComponent(shareText + ' ' + pageUrl);
+  document.getElementById('shareFacebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(pageUrl) + '&quote=' + encodeURIComponent(shareText);
+
+  var replyBtn = document.getElementById('replyBtn');
+  if(replyBtn){
+    replyBtn.href = 'mailto:?subject=' + encodeURIComponent('Re: your gift, ' + senderName) + '&body=' + encodeURIComponent('Hi ' + senderName + ',\n\nI just unwrapped your Moonspace gift and it made my day. Thank you!\n\n');
+  }
+
+  function copyAndToast(url, toastEl, appUrl){
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(url).catch(function(){});
+    }
+    toastEl.classList.add('show');
+    setTimeout(function(){ toastEl.classList.remove('show'); }, 1800);
+    setTimeout(function(){ window.open(appUrl, '_blank'); }, 350);
+  }
+
+  document.getElementById('shareInstagram').addEventListener('click', function(e){
+    e.preventDefault();
+    copyAndToast(pageUrl, document.getElementById('toastInstagram'), 'https://www.instagram.com/');
+  });
+  document.getElementById('shareTiktok').addEventListener('click', function(e){
+    e.preventDefault();
+    copyAndToast(pageUrl, document.getElementById('toastTiktok'), 'https://www.tiktok.com/');
+  });
+
+  document.getElementById('downloadBtn').addEventListener('click', function(){
+    var btn = this;
+    var original = btn.innerHTML;
+    btn.classList.add('loading');
+    btn.innerHTML = '<span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-9-9"/></svg></span><span class="label">Preparing…</span>';
+    var target = document.getElementById('giftCard');
+    html2canvas(target, { backgroundColor: null, scale: 2, useCORS: true }).then(function(canvas){
+      var imgData = canvas.toDataURL('image/png');
+      var jsPDF = window.jspdf.jsPDF;
+      var pdf = new jsPDF({ unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('moonspace-bloom-' + plotNo + '.pdf');
+      btn.classList.remove('loading');
+      btn.innerHTML = original;
+    }).catch(function(){
+      btn.classList.remove('loading');
+      btn.innerHTML = original;
+      alert('Could not generate the PDF right now — please try again.');
+    });
+  });
+
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var audio = document.getElementById('bgAudio');
+  var musicToggle = document.getElementById('musicToggle');
+  var musicLabel = document.getElementById('musicLabel');
+
+  function setupMusicToggle(){
+    if(!audio || !musicToggle) return;
+    musicToggle.hidden = false;
+    musicToggle.addEventListener('click', function(){
+      if(audio.paused){
+        audio.play().catch(function(){});
+        musicToggle.classList.remove('paused');
+        musicLabel.textContent = 'Music';
+      } else {
+        audio.pause();
+        musicToggle.classList.add('paused');
+        musicLabel.textContent = 'Paused';
+      }
+    });
+  }
+
+  function openGift(){
+    var scene = document.getElementById('ribbonScene');
+    var intro = document.getElementById('intro');
+    var cardWrap = document.getElementById('cardWrap');
+    scene.classList.add('open');
+
+    if(audio){
+      audio.play().catch(function(){});
+      setupMusicToggle();
+    }
+
+    setTimeout(function(){
+      intro.classList.add('fade-out');
+    }, reduced ? 90 : 750);
+
+    setTimeout(function(){
+      intro.hidden = true;
+      cardWrap.hidden = false;
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){ cardWrap.classList.add('show'); });
+      });
+    }, reduced ? 140 : 1050);
+  }
+
+  document.getElementById('ribbonScene').addEventListener('click', openGift);
+})();
+</script>
+</body>
+</html>

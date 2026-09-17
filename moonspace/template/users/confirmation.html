@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gift Created — Moonspace</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- Note for developer: this preview uses relative asset paths ({{ plot.image.url }} etc.)
+     which only resolve when rendered through Django. Opening this file directly in a
+     browser will show a placeholder moon glyph instead of a real image — that's expected. -->
+
+<style>
+    :root {
+        --night: #0a0d24;
+        --night-2: #12153a;
+        --night-3: #191d4a;
+        --card-line: rgba(217, 174, 92, 0.18);
+        --gold: #d9ae5c;
+        --gold-soft: #f1d9a0;
+        --rose: #e2a189;
+        --cream: #f3efe4;
+        --muted: #a3a6c8;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+        margin: 0;
+        padding: clamp(24px, 6vw, 56px) 16px;
+        font-family: 'Source Sans 3', sans-serif;
+        color: var(--cream);
+        background:
+            radial-gradient(ellipse 900px 500px at 20% -5%, rgba(90, 70, 160, 0.35), transparent 60%),
+            radial-gradient(ellipse 700px 500px at 100% 100%, rgba(60, 50, 120, 0.3), transparent 60%),
+            var(--night);
+        min-height: 100vh;
+    }
+
+    .container {
+        position: relative;
+        max-width: 620px;
+        margin: 0 auto;
+        background: linear-gradient(180deg, var(--night-2) 0%, #0e1130 100%);
+        border: 1px solid var(--card-line);
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 40px 100px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.02);
+        animation: rise-in 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+    @keyframes rise-in { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ================= HERO ================= */
+    .hero {
+        position: relative;
+        padding: clamp(32px, 6vw, 50px) clamp(24px, 5vw, 40px) clamp(44px, 8vw, 40px);
+        overflow: hidden;
+    }
+    .hero .field { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+
+    .star { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff; animation: twinkle 3.4s ease-in-out infinite; }
+    .star.big { width: 3px; height: 3px; background: var(--gold-soft); }
+    @keyframes twinkle { 0%, 100% { opacity: 0.15; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.15); } }
+
+    .shooting-star {
+        position: absolute; width: 90px; height: 1.5px;
+        background: linear-gradient(90deg, rgba(255,255,255,0.95), rgba(255,255,255,0));
+        border-radius: 2px; top: 12%; left: -10%;
+        animation: shoot 8s cubic-bezier(0.3, 0, 0.4, 1) infinite; opacity: 0;
+    }
+    .shooting-star.s2 { top: 58%; animation-delay: 4.2s; animation-duration: 9.5s; width: 60px; }
+    @keyframes shoot { 0% { transform: translate(0,0); opacity: 0; } 4% { opacity: 1; } 22%, 100% { transform: translate(280px, 110px); opacity: 0; } }
+
+    /* small orbiting moon + gift medallion, tucked top-right of the hero */
+    .moon-scene { position: absolute; top: 22px; right: 22px; width: 84px; height: 84px; }
+    .orbit-ring { position: absolute; inset: 0; border: 1px dashed rgba(217, 174, 92, 0.28); border-radius: 50%; }
+    .orbit { position: absolute; inset: 0; animation: spin 14s linear infinite; }
+    .orbit-token {
+        position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; border-radius: 50%;
+        background: var(--rose); box-shadow: 0 0 8px 2px rgba(226, 161, 137, 0.75);
+        transform: translate(-50%, -50%) translateX(42px);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* the gifted plot preview, framed as a keepsake medallion rather than a large photo */
+    .medallion {
+        position: absolute; top: 50%; left: 50%; width: 52px; height: 52px;
+        transform: translate(-50%, -50%); border-radius: 50%;
+        background: radial-gradient(circle at 34% 30%, #fff8e6 0%, #f1d9a0 35%, #d9ae5c 68%, #93712f 100%);
+        background-size: cover; background-position: center;
+        box-shadow: 0 0 30px 4px rgba(217, 174, 92, 0.35), inset 0 0 0 2px rgba(10,13,36,0.5);
+        animation: float-moon 7s ease-in-out infinite;
+    }
+    @keyframes float-moon { 0%, 100% { transform: translate(-50%, -50%) translateY(0); } 50% { transform: translate(-50%, -50%) translateY(-5px); } }
+
+    .hero-content { position: relative; z-index: 1; max-width: 400px; }
+    .eyebrow-mark { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gold-soft); margin-bottom: 18px; }
+
+    h1 {
+        margin: 0 0 14px; font-family: 'Fraunces', serif; font-weight: 500;
+        font-size: clamp(24px, 5vw, 33px); line-height: 1.2; letter-spacing: -0.01em; color: var(--cream);
+    }
+    .hero p { margin: 0; font-size: 15.5px; line-height: 1.65; color: var(--muted); max-width: 46ch; }
+
+    /* ================= BODY ================= */
+    .body-content { padding: clamp(28px, 6vw, 40px) clamp(24px, 5vw, 40px) 44px; }
+    .section-label { font-family: 'Fraunces', serif; font-size: 13px; font-weight: 500; color: var(--muted); margin: 0 0 14px; }
+
+    .gift-ticket {
+        position: relative; border: 1px solid rgba(217, 174, 92, 0.45); border-radius: 6px;
+        padding: 24px clamp(18px, 4vw, 28px);
+        background: linear-gradient(135deg, rgba(217,174,92,0.09), rgba(217,174,92,0.02));
+    }
+    .gift-ticket::before, .gift-ticket::after {
+        content: ""; position: absolute; width: 16px; height: 16px; background: var(--night-2);
+        border: 1px solid var(--card-line); border-radius: 50%; top: 50%; transform: translateY(-50%);
+    }
+    .gift-ticket::before { left: -8px; }
+    .gift-ticket::after { right: -8px; }
+
+    .gift-ticket h2 { margin: 0 0 6px; font-family: 'Fraunces', serif; font-weight: 500; font-size: 20px; color: var(--cream); }
+    .gift-ticket .desc { margin: 0 0 18px; font-size: 14.5px; color: var(--muted); line-height: 1.55; max-width: 46ch; }
+
+    .link-row { display: flex; gap: 10px; }
+    .url {
+        flex: 1; min-width: 0; padding: 12px 14px; background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1); border-radius: 5px; font-size: 13.5px;
+        color: var(--cream); word-break: break-all; font-family: 'Source Sans 3', sans-serif;
+    }
+    .copy-btn {
+        flex-shrink: 0; padding: 12px 18px; border: 1px solid var(--gold); background: var(--gold);
+        color: #201803; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 600;
+        transition: background 0.15s ease, transform 0.1s ease;
+    }
+    .copy-btn:hover { background: var(--gold-soft); }
+    .copy-btn:active { transform: scale(0.96); }
+    .copy-btn:focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 2px; }
+
+    .other-links { margin-top: 34px; }
+    .link-box { margin-top: 18px; }
+    .link-box p.label { margin: 0 0 8px; font-size: 14.5px; font-weight: 600; color: var(--cream); }
+    .link-box .url { font-size: 13px; padding: 11px 14px; }
+    .link-box .copy-btn { background: transparent; color: var(--cream); border: 1px solid rgba(255,255,255,0.16); padding: 11px 16px; }
+    .link-box .copy-btn:hover { background: rgba(255,255,255,0.06); }
+
+    .note {
+        margin-top: 32px; padding: 18px 20px; border-left: 2px solid var(--rose);
+        background: rgba(226, 161, 137, 0.06); border-radius: 0 6px 6px 0;
+    }
+    .note strong { display: block; font-family: 'Fraunces', serif; font-weight: 500; font-size: 15px; margin-bottom: 6px; color: var(--cream); }
+    .note p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--muted); }
+
+    .actions {
+        margin-top: 38px; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.08);
+        display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .save-copy {
+        display: inline-flex; align-items: center; gap: 10px; padding: 15px 30px; border: none; border-radius: 6px;
+        background: linear-gradient(135deg, var(--gold-soft), var(--gold)); color: #201803; font-size: 15px; font-weight: 600;
+        cursor: pointer; box-shadow: 0 10px 30px rgba(217, 174, 92, 0.35);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+        width: 100%; max-width: 340px; justify-content: center;
+    }
+    .save-copy:hover { filter: brightness(1.06); box-shadow: 0 12px 34px rgba(217, 174, 92, 0.48); }
+    .save-copy:active { transform: scale(0.97); }
+    .save-copy:disabled { opacity: 0.6; cursor: progress; box-shadow: none; }
+    .save-copy svg { flex-shrink: 0; }
+
+    .signature { font-family: 'Fraunces', serif; font-style: italic; font-size: 14px; color: var(--muted); text-align: center; }
+
+    @media (max-width: 480px) {
+        .link-row { flex-direction: column; }
+        .copy-btn { width: 100%; }
+        .gift-ticket::before, .gift-ticket::after { display: none; }
+        .moon-scene { width: 60px; height: 60px; top: 16px; right: 16px; }
+        .medallion { width: 38px; height: 38px; }
+        .orbit-token { transform: translate(-50%, -50%) translateX(30px); }
+        .hero-content { max-width: 100%; padding-right: 70px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .container { animation: none; }
+        .star, .shooting-star, .orbit, .medallion { animation: none !important; }
+    }
+
+    /* freeze motion for a clean PDF snapshot */
+    .pdf-capturing .star, .pdf-capturing .shooting-star, .pdf-capturing .orbit, .pdf-capturing .medallion { animation: none !important; }
+    .pdf-capturing .shooting-star { opacity: 0 !important; }
+    .pdf-capturing .star { opacity: 0.8 !important; }
+</style>
+</head>
+
+<body>
+
+<div class="container" id="confirmation">
+
+    <div class="hero">
+        <div class="field" aria-hidden="true">
+            <span class="star" style="top:14%; left:8%; animation-delay:0s;"></span>
+            <span class="star big" style="top:24%; left:22%; animation-delay:0.6s;"></span>
+            <span class="star" style="top:10%; left:38%; animation-delay:1.4s;"></span>
+            <span class="star" style="top:34%; left:14%; animation-delay:2.1s;"></span>
+            <span class="star" style="top:46%; left:4%; animation-delay:0.9s;"></span>
+            <span class="star big" style="top:70%; left:16%; animation-delay:1.8s;"></span>
+            <span class="star" style="top:80%; left:30%; animation-delay:0.3s;"></span>
+            <span class="star" style="top:60%; left:36%; animation-delay:2.6s;"></span>
+            <div class="shooting-star"></div>
+            <div class="shooting-star s2"></div>
+        </div>
+
+        <!-- gifted plot preview: a small orbiting medallion instead of a full-width image -->
+        <div class="moon-scene" aria-hidden="true">
+            <div class="orbit-ring"></div>
+            <div class="orbit"><div class="orbit-token"></div></div>
+            <div class="medallion" {% if plot.image %}style="background-image: url('{{ plot.image.url }}');"{% endif %}></div>
+        </div>
+
+        <div class="hero-content">
+            <span class="eyebrow-mark">
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 0 L9.4 6.2 16 8 9.4 9.8 8 16 6.6 9.8 0 8 6.6 6.2 Z" fill="#f1d9a0"/></svg>
+                Moonspace
+            </span>
+            <h1>Your virtual Moonspace is ready to share with the one you love</h1>
+            <p>A plot in the sky has been set aside for them. Send the link below and they can visit it any time.</p>
+        </div>
+    </div>
+
+    <div class="body-content">
+
+        <p class="section-label">Gift link</p>
+
+        <div class="gift-ticket">
+            <h2>Share this with them</h2>
+            <p class="desc">This is the link to send. Opening it shows the live Moonspace plot exactly as you created it.</p>
+
+            <div class="link-row">
+                <input class="url" id="gift-url" type="text" readonly
+                    value="{{ request.scheme }}://{{ request.get_host }}/{{ plot.url }}">
+                <button class="copy-btn" onclick="copyUrl('gift-url', this)">Copy</button>
+            </div>
+        </div>
+
+        <div class="other-links">
+            <p class="section-label" style="margin-bottom: 0;">Other ways to view it</p>
+
+            <div class="link-box">
+                <p class="label">Plot directly (2D)</p>
+                <div class="link-row">
+                    <input class="url" id="2d-url" type="text" readonly
+                        value="{{ request.scheme }}://{{ request.get_host }}/plot/{{ plot.url }}/">
+                    <button class="copy-btn" onclick="copyUrl('2d-url', this)">Copy</button>
+                </div>
+            </div>
+
+            <div class="link-box">
+                <p class="label">Plot directly (Moon view)</p>
+                <div class="link-row">
+                    <input class="url" id="moon-url" type="text" readonly
+                        value="{{ request.scheme }}://{{ request.get_host }}/moon/{{ plot.url }}/">
+                    <button class="copy-btn" onclick="copyUrl('moon-url', this)">Copy</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="note">
+            <strong>Which link should I send?</strong>
+            <p>Use the gift link above. It's the one built for sharing — the other two are just direct views of the same plot, in case you want them for yourself.</p>
+        </div>
+
+        <div class="actions">
+            <button class="save-copy" id="save-copy-btn" onclick="downloadAsPdf()">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 12.5v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1" stroke="#201803" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span id="save-copy-label">Download as PDF</span>
+            </button>
+            <span class="signature">Sent with Moonspace</span>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+    function copyUrl(inputId, button) {
+        const input = document.getElementById(inputId);
+        navigator.clipboard.writeText(input.value);
+        const originalText = button.innerText;
+        button.innerText = "Copied";
+        setTimeout(function () { button.innerText = originalText; }, 1500);
+    }
+
+    function waitForImages(root) {
+        const imgs = Array.from(root.querySelectorAll('img'));
+        const bgEls = Array.from(root.querySelectorAll('[style*="background-image"]'));
+
+        const imgPromises = imgs.map(function (img) {
+            if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+            return new Promise(function (resolve) {
+                img.addEventListener('load', resolve, { once: true });
+                img.addEventListener('error', resolve, { once: true });
+            });
+        });
+
+        const bgPromises = bgEls.map(function (el) {
+            const match = /url\(["']?(.*?)["']?\)/.exec(el.style.backgroundImage || '');
+            if (!match || !match[1]) return Promise.resolve();
+            return new Promise(function (resolve) {
+                const probe = new Image();
+                probe.onload = resolve;
+                probe.onerror = resolve;
+                probe.src = match[1];
+            });
+        });
+
+        return Promise.all(imgPromises.concat(bgPromises));
+    }
+
+    async function downloadAsPdf() {
+        const el = document.getElementById('confirmation');
+        const btn = document.getElementById('save-copy-btn');
+        const label = document.getElementById('save-copy-label');
+        const originalLabel = label.innerText;
+
+        btn.disabled = true;
+        label.innerText = "Preparing…";
+        el.classList.add('pdf-capturing');
+
+        try {
+            if (document.fonts && document.fonts.ready) await document.fonts.ready;
+            await waitForImages(el);
+            await new Promise(function (r) { requestAnimationFrame(r); });
+
+            const scale = 2;
+            const canvas = await html2canvas(el, {
+                scale: scale,
+                backgroundColor: '#0a0d24',
+                useCORS: true,
+                windowWidth: el.scrollWidth,
+                windowHeight: el.scrollHeight
+            });
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const pdfWidth = (canvas.width / scale) * 0.75;
+            const pdfHeight = (canvas.height / scale) * 0.75;
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                unit: 'pt',
+                format: [pdfWidth, pdfHeight],
+                orientation: pdfWidth >= pdfHeight ? 'landscape' : 'portrait'
+            });
+
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save('moonspace-gift.pdf');
+        } catch (err) {
+            console.error('PDF export failed:', err);
+            alert('Sorry, the PDF could not be created. Please try again.');
+        } finally {
+            el.classList.remove('pdf-capturing');
+            btn.disabled = false;
+            label.innerText = originalLabel;
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Lunaria — Name a Piece of the Moon</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,560;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0712; --bg2:#1c1230; --panel:rgba(255,255,255,0.06); --line:rgba(255,255,255,0.12);
+    --ink:#fbf4ec; --ink-dim:#c9b8d6; --ink-faint:#8c7a9c;
+    --gold:#f3c583; --rose:#ff8fa3; --rose-deep:#c94868;
+    --serif:'Fraunces',Georgia,serif; --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{ background:
+      radial-gradient(ellipse 85% 55% at 18% -6%, rgba(255,143,163,0.16), transparent 60%),
+      radial-gradient(ellipse 75% 50% at 85% 6%, rgba(243,197,131,0.13), transparent 55%),
+      linear-gradient(180deg, var(--bg2), var(--bg) 42%, #030106 100%);
+    color:var(--ink); font-family:var(--sans); overflow-x:hidden; min-height:100vh; }
+  a{ color:inherit; }
+  ::selection{ background:var(--rose); color:#1a0509; }
+  section{ position:relative; }
+
+  /* ---------- nav ---------- */
+  nav{ display:flex; align-items:center; justify-content:space-between; padding:22px 6vw; position:relative; z-index:20; }
+  .brand{ display:flex; align-items:center; gap:10px; font-family:var(--serif); font-size:19px; letter-spacing:0.2px; }
+  .brand .mark{ width:26px; height:26px; border-radius:50%; background:radial-gradient(circle at 32% 30%, #fff, var(--gold) 45%, #7a5620 100%); box-shadow:0 0 16px rgba(232,185,117,0.5); }
+  .navlinks{ display:flex; align-items:center; gap:30px; list-style:none; font-size:13px; font-weight:500; color:var(--ink-dim); }
+  .navlinks a{ text-decoration:none; transition:color .2s ease; position:relative; }
+  .navlinks a:hover{ color:var(--ink); }
+  .navright{ display:flex; align-items:center; gap:14px; }
+  .signin{ font-size:13px; font-weight:600; padding:9px 20px; border:1px solid var(--line); border-radius:30px; background:rgba(255,255,255,0.03); transition:border-color .2s ease, background .2s ease; }
+  .signin:hover{ border-color:rgba(255,255,255,0.28); background:rgba(255,255,255,0.06); }
+  .nav-cta{ display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:700; padding:9px 18px; border-radius:30px; background:linear-gradient(135deg,var(--rose),var(--rose-deep)); color:#fff; text-decoration:none; box-shadow:0 10px 22px -10px rgba(255,122,148,0.6); }
+
+  /* ---------- hero ---------- */
+  .hero{ display:grid; grid-template-columns:1.05fr 0.95fr; align-items:start; gap:24px; padding:6px 6vw 10px; }
+  .hero-copy{ padding-top:26px; }
+  .badge{ display:inline-flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink-dim); font-weight:500; }
+  .badge .dot{ width:6px; height:6px; border-radius:50%; background:var(--rose); box-shadow:0 0 8px var(--rose); }
+  h1{ font-family:var(--serif); font-weight:560; line-height:1.06; font-size:clamp(34px,4.6vw,58px); margin-top:16px; letter-spacing:-0.5px; }
+  h1 .accent{ font-style:italic; color:var(--rose); }
+  .lede{ margin-top:18px; font-size:15.5px; line-height:1.65; color:var(--ink-dim); max-width:46ch; }
+  .cta-row{ display:flex; align-items:center; gap:18px; margin-top:30px; flex-wrap:wrap; }
+  .btn-primary{ display:inline-flex; align-items:center; gap:9px; padding:14px 26px; border-radius:30px; background:linear-gradient(135deg,var(--rose),var(--rose-deep)); color:#fff; font-weight:700; font-size:14px; text-decoration:none; box-shadow:0 14px 30px -12px rgba(255,122,148,0.55); transition:transform .15s ease, box-shadow .15s ease; border:none; cursor:pointer; }
+  .btn-primary:hover{ transform:translateY(-1px); box-shadow:0 16px 34px -10px rgba(255,122,148,0.7); }
+  .btn-ghost{ font-size:13.5px; font-weight:600; color:var(--ink-dim); text-decoration:none; border-bottom:1px solid var(--line); padding-bottom:2px; transition:color .2s ease, border-color .2s ease; }
+  .btn-ghost:hover{ color:var(--ink); border-color:var(--ink-dim); }
+  .whisper{ margin-top:22px; font-family:var(--serif); font-style:italic; font-size:16.5px; line-height:1.5; color:var(--gold); max-width:38ch; text-align:center; margin-left:auto; margin-right:auto; }
+  .stats{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:36px; max-width:460px; }
+  .stat-card{ padding:16px 14px; border-radius:16px; background:linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02)); border:1px solid var(--line); text-align:left; position:relative; overflow:hidden; }
+  .stat-card::after{ content:''; position:absolute; right:-18px; top:-18px; width:60px; height:60px; border-radius:50%; background:radial-gradient(circle, rgba(255,143,163,0.25), transparent 70%); }
+  .stat-card b{ display:block; font-family:var(--serif); font-size:clamp(20px,2.4vw,26px); background:linear-gradient(135deg,var(--gold),var(--rose)); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:-0.5px; }
+  .stat-card span{ display:block; margin-top:4px; font-size:10.5px; color:var(--ink-dim); line-height:1.4; }
+
+  /* ---------- moon stage ---------- */
+  .stage{ position:relative; width:100%; height:min(58vh,480px); min-height:320px; }
+  #scene{ width:100%; height:100%; display:block; cursor:grab; }
+  #scene:active{ cursor:grabbing; }
+  .markerLayer{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+  .marker{ position:absolute; top:0; left:0; display:flex; flex-direction:column; align-items:center; pointer-events:auto; cursor:pointer; will-change:transform,opacity; }
+  .marker .photo{ width:34px; height:34px; border-radius:9px; object-fit:cover; border:2.5px solid var(--gold); box-shadow:0 0 0 5px rgba(243,197,131,0.16), 0 6px 18px -4px rgba(0,0,0,0.5), 0 0 16px rgba(243,197,131,0.55); transition:border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+  .marker:hover .photo{ transform:scale(1.14); }
+  .marker .ring{ position:absolute; inset:-6px; border-radius:13px; border:1px solid rgba(243,197,131,0.4); animation:ringpulse 2.6s ease-out infinite; }
+  @keyframes ringpulse{ 0%{ transform:scale(0.85); opacity:0.9; } 100%{ transform:scale(1.5); opacity:0; } }
+  .marker .label{ position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); font-size:10.5px; font-weight:600; white-space:nowrap; color:var(--ink); background:rgba(20,13,32,0.92); border:1px solid var(--line); padding:3px 9px; border-radius:20px; opacity:0; transition:opacity .15s ease; }
+  .marker:hover .label{ opacity:1; }
+  .marker.active .photo{ border-color:var(--rose); box-shadow:0 0 0 4px rgba(255,143,163,0.25), 0 0 12px rgba(255,143,163,0.8); }
+
+  .tooltip{ position:absolute; z-index:40; max-width:220px; padding:12px 14px; background:rgba(20,13,32,0.96); border:1px solid var(--line); border-radius:12px; font-size:12px; line-height:1.5; color:var(--ink-dim); opacity:0; transform:translateY(6px); transition:opacity .18s ease, transform .18s ease; pointer-events:none; box-shadow:0 16px 30px -14px rgba(0,0,0,0.6); }
+  .tooltip.show{ opacity:1; transform:translateY(0); }
+  .tooltip .who{ color:var(--ink); font-weight:700; font-size:12.5px; margin-bottom:3px; }
+  .tooltip .msg{ font-style:italic; color:var(--ink-faint); }
+
+  .hint{ position:absolute; left:50%; bottom:14px; transform:translateX(-50%); font-size:11px; color:var(--ink-dim); background:rgba(20,13,32,0.55); border:1px solid var(--line); padding:6px 12px; border-radius:20px; backdrop-filter:blur(6px); white-space:nowrap; }
+
+  /* ---------- story / couple section ---------- */
+  .story{ margin:64px 6vw 0; padding:64px 6vw; background:var(--panel); border:1px solid var(--line); border-radius:26px; display:grid; grid-template-columns:0.85fr 1.15fr; gap:48px; align-items:center; overflow:hidden; }
+  .story-art{ position:relative; aspect-ratio:4/3; border-radius:20px; overflow:hidden; background:linear-gradient(160deg,#241733,#0b0712); border:1px solid var(--line); }
+  .story-art img{ width:100%; height:100%; object-fit:cover; opacity:0.92; }
+  .story-art .glowring{ position:absolute; inset:0; box-shadow:inset 0 0 60px rgba(255,143,163,0.18); pointer-events:none; }
+  .story-kicker{ font-size:12.5px; color:var(--rose); font-weight:600; }
+  .story h2{ font-family:var(--serif); font-weight:560; font-size:clamp(24px,3vw,32px); margin-top:10px; line-height:1.2; }
+  .story p{ margin-top:16px; font-size:14.5px; line-height:1.75; color:var(--ink-dim); max-width:52ch; }
+  .story p + p{ margin-top:12px; }
+  .story .signoff{ margin-top:20px; font-family:var(--serif); font-style:italic; color:var(--gold); font-size:14.5px; }
+
+  /* ---------- pricing ---------- */
+  .pricing{ margin:10px 6vw 0; text-align:center; }
+  .pricing-head h2{ font-family:var(--serif); font-weight:560; font-size:clamp(26px,3.2vw,36px); }
+  .pricing-head p{ margin-top:10px; color:var(--ink-dim); font-size:14px; max-width:46ch; margin-left:auto; margin-right:auto; }
+  .plans{ display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:40px; max-width:820px; margin-left:auto; margin-right:auto; text-align:left; }
+  .plan{ padding:32px 28px; border-radius:22px; border:1px solid var(--line); background:linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015)); position:relative; }
+  .plan.forever{ border-color:rgba(255,143,163,0.45); background:linear-gradient(160deg, rgba(255,143,163,0.1), rgba(255,255,255,0.02)); }
+  .plan-tag{ position:absolute; top:-13px; right:26px; font-size:11px; font-weight:700; background:linear-gradient(135deg,var(--rose),var(--rose-deep)); color:#fff; padding:5px 14px; border-radius:20px; }
+  .plan-name{ font-family:var(--serif); font-size:20px; }
+  .plan-price{ margin-top:10px; display:flex; align-items:baseline; gap:6px; }
+  .plan-price b{ font-family:var(--serif); font-size:40px; letter-spacing:-1px; }
+  .plan-price span{ font-size:12.5px; color:var(--ink-faint); }
+  .plan-desc{ margin-top:10px; font-size:13px; color:var(--ink-dim); line-height:1.55; }
+  .plan-list{ list-style:none; margin-top:22px; display:flex; flex-direction:column; gap:11px; }
+  .plan-list li{ display:flex; align-items:flex-start; gap:9px; font-size:13.5px; color:var(--ink-dim); line-height:1.45; }
+  .plan-list li svg{ flex-shrink:0; margin-top:2px; color:var(--rose); }
+  .plan-list li.extra{ color:var(--ink); font-weight:600; }
+  .plan .btn-primary{ margin-top:26px; width:100%; justify-content:center; }
+  .plan.love .btn-primary{ background:rgba(255,255,255,0.08); box-shadow:none; }
+  .plan.love .btn-primary:hover{ background:rgba(255,255,255,0.13); }
+
+  /* ---------- faq ---------- */
+  .faq{ margin:70px 6vw 0; max-width:760px; margin-left:auto; margin-right:auto; }
+  .faq-head{ text-align:center; }
+  .faq-head h2{ font-family:var(--serif); font-weight:560; font-size:clamp(24px,3vw,32px); }
+  .faq-head p{ margin-top:10px; color:var(--ink-dim); font-size:13.5px; }
+  .faq-list{ margin-top:34px; border-top:1px solid var(--line); }
+  .faq-item{ border-bottom:1px solid var(--line); }
+  .faq-q{ width:100%; text-align:left; background:none; border:none; color:var(--ink); font-family:var(--sans); font-size:14.5px; font-weight:600; padding:20px 4px; display:flex; justify-content:space-between; align-items:center; gap:16px; cursor:pointer; }
+  .faq-q .plus{ flex-shrink:0; width:20px; height:20px; position:relative; }
+  .faq-q .plus::before, .faq-q .plus::after{ content:''; position:absolute; background:var(--ink-dim); border-radius:2px; transition:transform .2s ease, opacity .2s ease; }
+  .faq-q .plus::before{ width:14px; height:1.6px; top:9px; left:3px; }
+  .faq-q .plus::after{ width:1.6px; height:14px; left:9px; top:3px; }
+  .faq-item.open .plus::after{ transform:rotate(90deg); opacity:0; }
+  .faq-a{ max-height:0; overflow:hidden; transition:max-height .25s ease; }
+  .faq-a p{ padding:0 4px 20px; font-size:13.5px; line-height:1.7; color:var(--ink-dim); max-width:62ch; }
+  .faq-note{ margin-top:30px; padding:18px 20px; border-radius:14px; background:rgba(255,143,163,0.08); border:1px solid rgba(255,143,163,0.25); font-size:13px; line-height:1.6; color:var(--ink-dim); }
+  .faq-note b{ color:var(--ink); }
+
+  footer{ text-align:center; padding:48px 6vw 44px; font-size:11.5px; color:var(--ink-faint); margin-top:60px; }
+
+  @media (max-width:900px){
+    .navlinks{ display:none; }
+    .nav-cta{ display:none; }
+    .hero{ grid-template-columns:1fr; padding:4px 6vw 0; gap:4px; text-align:left; }
+    .hero-copy{ padding-top:0; }
+    .badge{ font-size:11.5px; }
+    h1{ font-size:clamp(30px,9vw,42px); }
+    .lede{ font-size:14px; max-width:none; }
+    .cta-row{ margin-top:24px; gap:10px 14px; }
+    .whisper{ font-size:14.5px; margin-top:18px; }
+    .stats{ display:none; }
+    .stage{ order:2; height:min(48vh,380px); margin:10px -6vw 0; width:auto; border-radius:0; }
+    .hint{ display:none; }
+    .story{ margin:40px 5vw 0; padding:34px 6vw; grid-template-columns:1fr; gap:26px; border-radius:22px; }
+    .story-art{ aspect-ratio:16/10; }
+    .plans{ grid-template-columns:1fr; }
+    .faq{ margin:56px 5vw 0; }
+  }
+  @media (max-width:480px){
+    nav{ padding:16px 5vw; }
+    .signin{ padding:8px 15px; font-size:12px; }
+    .hero{ padding:2px 5vw 0; }
+    .cta-row{ flex-direction:column; align-items:stretch; }
+    .btn-primary, .btn-ghost{ width:100%; justify-content:center; text-align:center; }
+    .btn-primary{ padding:14px 22px; font-size:14px; }
+    .btn-ghost{ border:1px solid var(--line); border-radius:30px; padding:12px; }
+    .plan{ padding:26px 22px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="brand"><span class="mark"></span>Lunaria</div>
+  <ul class="navlinks">
+    <li><a href="#moon">The Moon</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <div class="navright">
+    <a class="nav-cta" href="/buy">Gift Something</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-copy">
+    <div class="badge"><span class="dot"></span>Chosen by 6,400+ couples this year</div>
+    <h1>Name a piece of<br>the moon <span class="accent">for someone you love</span></h1>
+    <p class="lede">Pick a plot, write their name across it, and watch it take its place among thousands of others — a small, permanent light in a very big sky.</p>
+    <div class="cta-row">
+      <a class="btn-primary" href="/buy">Gift Something
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+      <a class="btn-ghost" href="/plot/3d/">Explore</a>
+    </div>
+    <p class="whisper">Bring the moon to them, to express your love — what could be more lovely than this?</p>
+    <div class="stats">
+      <div class="stat-card"><b id="statPlots">0</b><span>plots claimed</span></div>
+      <div class="stat-card"><b id="statCountries">0</b><span>countries reached</span></div>
+      <div class="stat-card"><b>∞</b><span>how long it stays</span></div>
+    </div>
+  </div>
+
+  <div class="stage" id="moon">
+    <canvas id="scene"></canvas>
+    <div class="markerLayer" id="markerLayer"></div>
+    <div class="tooltip" id="tooltip"></div>
+    <div class="hint">Drag to look around · tap a light for its story</div>
+  </div>
+</section>
+
+<section class="moon-letter">
+  <div class="moon-letter-wrap">
+
+    <div class="moon-letter-copy">
+
+      <div class="moon-letter-topline">
+        <span class="moon-letter-line"></span>
+        <span>A GIFT WORTH KEEPING</span>
+      </div>
+
+      <h2>
+        Give them something
+        <em>that exists only once.</em>
+      </h2>
+
+      <p>
+        Some feelings deserve more than a message.
+        Leave behind your words, your memory, and a moment
+        made especially for someone who matters.
+      </p>
+
+      <div class="moon-letter-detail">
+        <span class="moon-letter-detail-line"></span>
+        <span>Created for one person · One moment · One memory</span>
+      </div>
+
+    </div>
+
+    <div class="moon-letter-visual">
+
+      <div class="moon-letter-image">
+        <img src="letter.jpg" alt="Personal letter">
+      </div>
+
+      <div class="moon-letter-number">
+        01
+      </div>
+
+      <div class="moon-letter-caption">
+        <span class="caption-dot"></span>
+
+        <div>
+          <small>A PERSONAL NOTE</small>
+          <p>
+            Words become<br>
+            part of the gift.
+          </p>
+        </div>
+      </div>
+
+      <div class="moon-letter-corner">
+        2026
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<style>
+.moon-letter{
+  width:100%;
+  padding:80px 7vw;
+  overflow:hidden;
+}
+
+.moon-letter-wrap{
+  max-width:1350px;
+  margin:auto;
+
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  align-items:center;
+
+  gap:120px;
+}
+
+
+/* LEFT SIDE */
+
+.moon-letter-copy{
+  max-width:620px;
+}
+
+.moon-letter-topline{
+  display:flex;
+  align-items:center;
+  gap:14px;
+
+  margin-bottom:30px;
+
+  font-size:9px;
+  letter-spacing:.3em;
+  text-transform:uppercase;
+
+  color:rgba(216,189,138,.65);
+}
+
+.moon-letter-line{
+  width:34px;
+  height:1px;
+  background:rgba(216,189,138,.55);
+}
+
+.moon-letter-copy h2{
+  margin:0 0 32px;
+
+  max-width:680px;
+
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(50px,5.3vw,80px);
+
+  line-height:.98;
+  letter-spacing:-.05em;
+
+  font-weight:400;
+
+  color:#e4d4b5;
+}
+
+.moon-letter-copy h2 em{
+  display:block;
+
+  font-style:italic;
+  font-weight:400;
+
+  color:#c7a86c;
+}
+
+.moon-letter-copy p{
+  max-width:510px;
+
+  margin:0;
+
+  font-size:15px;
+  line-height:1.85;
+
+  letter-spacing:.01em;
+
+  color:rgba(255,255,255,.48);
+}
+
+.moon-letter-detail{
+  display:flex;
+  align-items:center;
+
+  gap:14px;
+
+  margin-top:40px;
+
+  font-size:9px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+
+  color:rgba(255,255,255,.3);
+}
+
+.moon-letter-detail-line{
+  width:48px;
+  height:1px;
+
+  background:rgba(255,255,255,.25);
+}
+
+
+/* IMAGE SIDE */
+
+.moon-letter-visual{
+  position:relative;
+
+  min-height:600px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.moon-letter-image{
+  width:min(450px,82%);
+
+  position:relative;
+
+  z-index:2;
+
+  animation:letterFloat 7s ease-in-out infinite;
+}
+
+.moon-letter-image::before{
+  content:"";
+
+  position:absolute;
+
+  inset:-12px;
+
+  border:1px solid rgba(216,189,138,.13);
+
+  border-radius:21px;
+
+  pointer-events:none;
+}
+
+.moon-letter-image img{
+  display:block;
+
+  width:100%;
+  height:auto;
+
+  border-radius:18px;
+
+  object-fit:cover;
+
+  box-shadow:
+    0 40px 100px rgba(0,0,0,.5),
+    0 10px 30px rgba(0,0,0,.2);
+}
+
+
+/* NUMBER */
+
+.moon-letter-number{
+  position:absolute;
+
+  top:10%;
+  left:4%;
+
+  font-family:Georgia,"Times New Roman",serif;
+
+  font-size:13px;
+
+  letter-spacing:.2em;
+
+  color:rgba(216,189,138,.4);
+
+  animation:numberFloat 6s ease-in-out infinite;
+}
+
+.moon-letter-number::after{
+  content:"";
+
+  display:block;
+
+  width:1px;
+  height:45px;
+
+  margin:10px auto 0;
+
+  background:rgba(216,189,138,.25);
+}
+
+
+/* CAPTION */
+
+.moon-letter-caption{
+  position:absolute;
+
+  right:0;
+  bottom:10%;
+
+  display:flex;
+  align-items:flex-start;
+
+  gap:12px;
+
+  animation:captionFloat 6s ease-in-out infinite;
+}
+
+.caption-dot{
+  width:5px;
+  height:5px;
+
+  margin-top:5px;
+
+  border-radius:50%;
+
+  background:#c7a86c;
+}
+
+.moon-letter-caption small{
+  display:block;
+
+  margin-bottom:8px;
+
+  font-size:8px;
+
+  letter-spacing:.25em;
+
+  color:rgba(216,189,138,.55);
+}
+
+.moon-letter-caption p{
+  margin:0;
+
+  font-family:Georgia,"Times New Roman",serif;
+
+  font-size:14px;
+
+  line-height:1.45;
+
+  color:rgba(255,255,255,.45);
+}
+
+
+/* CORNER DETAIL */
+
+.moon-letter-corner{
+  position:absolute;
+
+  right:3%;
+  top:15%;
+
+  font-size:8px;
+
+  letter-spacing:.25em;
+
+  color:rgba(255,255,255,.2);
+
+  writing-mode:vertical-rl;
+}
+
+
+/* ANIMATIONS */
+
+@keyframes letterFloat{
+
+  0%,100%{
+    transform:translateY(0) rotate(-1.5deg);
+  }
+
+  50%{
+    transform:translateY(-13px) rotate(.5deg);
+  }
+
+}
+
+@keyframes numberFloat{
+
+  0%,100%{
+    transform:translateY(0);
+  }
+
+  50%{
+    transform:translateY(-8px);
+  }
+
+}
+
+@keyframes captionFloat{
+
+  0%,100%{
+    transform:translateY(0);
+  }
+
+  50%{
+    transform:translateY(-6px);
+  }
+
+}
+
+
+/* MOBILE */
+
+@media(max-width:850px){
+
+  .moon-letter{
+    padding:60px 24px;
+  }
+
+  .moon-letter-wrap{
+    grid-template-columns:1fr;
+    gap:45px;
+  }
+
+  .moon-letter-copy h2{
+    font-size:50px;
+    line-height:1;
+  }
+
+  .moon-letter-copy p{
+    font-size:14px;
+    line-height:1.8;
+  }
+
+  .moon-letter-detail{
+    margin-top:30px;
+    font-size:8px;
+    line-height:1.5;
+  }
+
+  .moon-letter-visual{
+    min-height:500px;
+  }
+
+  .moon-letter-image{
+    width:88%;
+    max-width:410px;
+  }
+
+  .moon-letter-number{
+    top:7%;
+    left:0;
+  }
+
+  .moon-letter-caption{
+    right:0;
+    bottom:3%;
+  }
+
+  .moon-letter-corner{
+    display:none;
+  }
+
+}
+</style>
+<section class="pricing" id="pricing">
+  <div class="pricing-head">
+    <h2>Two ways to give the moon</h2>
+    <p>Both plans give them a real named plot. The difference is how deep the keepsake goes.</p>
+  </div>
+  <div class="plans">
+    <div class="plan love">
+      <div class="plan-name">Moon Love</div>
+      <div class="plan-price"><b>$4.99</b><span>one-time</span></div>
+      <div class="plan-desc">A complete plot, made personal — everything you need to give something that actually means something.</div>
+      <ul class="plan-list">
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Choose and claim a real plot on the moon</li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Custom keepsake page with your names and message</li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Attach a custom song to play when they open it</li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Delivered straight to their email</li>
+      </ul>
+      <a class="btn-primary" href="#">Get Moon Love</a>
+    </div>
+    <div class="plan forever">
+      <div class="plan-tag">Most chosen</div>
+      <div class="plan-name">Moon Forever</div>
+      <div class="plan-price"><b>$9.99</b><span>one-time</span></div>
+      <div class="plan-desc">Everything in Moon Love, plus the ability for them to write back — so the gift becomes a conversation.</div>
+      <ul class="plan-list">
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Choose and claim a real plot on the moon</li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Custom keepsake page with your names and message</li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Attach a custom song to play when they open it</li>
+        <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Delivered straight to their email</li>
+        <li class="extra"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>Reply feature — they can send a message back to you</li>
+      </ul>
+      <a class="btn-primary" href="#">Get Moon Forever</a>
+    </div>
+  </div>
+</section>
+
+<section class="faq" id="faq">
+  <div class="faq-head">
+    <h2>Before you gift the moon</h2>
+    <p>A few honest answers, so there's no confusion about what you're actually giving.</p>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-q">Am I buying an actual piece of the moon?<span class="plus"></span></button>
+      <div class="faq-a"><p>No. Lunaria is a virtual gifting platform — no one can legally sell land on the moon, and we don't claim to. What you're buying is a named, permanent digital plot on our interactive moon, with a keepsake page attached to it. It's a symbolic gift, not a real estate deed.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Is this affiliated with NASA or any space agency?<span class="plus"></span></button>
+      <div class="faq-a"><p>No. Lunaria has no affiliation with NASA, the ESA, or any government or space organization. We're an independent gifting product, and we're upfront about that everywhere on the site.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">What actually happens after I pay?<span class="plus"></span></button>
+      <div class="faq-a"><p>Your chosen coordinates are reserved, your keepsake page is built with the name, message, and song you provide, and a link is emailed to you and, if you choose, directly to the recipient. Their plot then appears as a marker on the live 3D moon.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">What's the difference between the two plans?<span class="plus"></span></button>
+      <div class="faq-a"><p>Moon Love covers the plot, the custom keepsake, the custom song, and email delivery. Moon Forever includes all of that plus a reply feature, so the person you gifted it to can write something back to you through the same page.</p></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q">Can I edit the message after I've sent it?<span class="plus"></span></button>
+      <div class="faq-a"><p>Yes, you can update the name, message, and song on your keepsake page any time by signing in with the email you used at checkout.</p></div>
+    </div>
+  </div>
+  <div class="faq-note"><b>To be clear:</b> Lunaria does not sell real lunar property, does not grant legal ownership of any part of the moon, and isn't a scientific or governmental service. It's a sentimental, virtual keepsake — a unique way to say something to someone, nothing more.</div>
+</section>
+
+<footer>Lunaria · not affiliated with NASA or any space agency · a gift, not a deed</footer>
+
+
+
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+
+  /* ---------- static demo data (this file has no backend; swap for real plots) ---------- */
+  var plots = [
+    { name:"For Maya",    from:"Rohan",   message:"Every star in this sky reminded me of you, so now one of them says your name." },
+    { name:"Elena & Sam", from:"Sam",     message:"Five years in, and I'd still pick you across every plot on this moon." },
+    { name:"To Amma",     from:"Divya",   message:"For every night you stayed up worrying about me. This one's yours." },
+    { name:"Forever Priya", from:"Karan", message:"Marry me — I already gave you the moon, figured I'd ask properly too." },
+    { name:"Little Leo",  from:"Mom & Dad", message:"Before you could talk, we gave you a piece of the sky to grow into." },
+    { name:"For Grandpa", from:"Noah",    message:"You always said you'd walk on the moon one day. This is close enough." },
+    { name:"Still Us",    from:"Alex",    message:"Fifteen years married. Turns out there's still new sky to give you." }
+  ];
+
+  function hash(str){ var h=0; for(var i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))|0; } return Math.abs(h); }
+  plots.forEach(function(p,i){
+    var h = hash(p.name+i);
+    p.lat = (h % 12000)/100 - 60;
+    p.lon = ((h>>3) % 36000)/100 - 180;
+    p.photo = "https://i.pravatar.cc/120?img=" + (8 + i*9); // stand-in photo; swap for the real uploaded image per plot
+  });
+
+  var RADIUS = 30;
+  function surfacePoint(lat, lon, r){
+    var phi=(90-lat)*Math.PI/180, theta=(lon+180)*Math.PI/180;
+    return new THREE.Vector3(-r*Math.sin(phi)*Math.cos(theta), r*Math.cos(phi), r*Math.sin(phi)*Math.sin(theta));
+  }
+
+  var stage = document.getElementById('moon');
+  var canvas = document.getElementById('scene');
+  var renderer = new THREE.WebGLRenderer({ canvas:canvas, antialias:true, alpha:true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000);
+  var defaultDist = 92;
+  camera.position.set(0,10,defaultDist);
+
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.dampingFactor = 0.07;
+  controls.enablePan = false; controls.enableZoom = false;
+  controls.minDistance = 60; controls.maxDistance = 140;
+  controls.autoRotate = true; controls.autoRotateSpeed = 0.5;
+  controls.rotateSpeed = 0.5;
+
+  var idleTimer=null;
+  controls.addEventListener('start', function(){ controls.autoRotate=false; clearTimeout(idleTimer); });
+  controls.addEventListener('end', function(){ idleTimer=setTimeout(function(){ controls.autoRotate=true; },3500); });
+
+  scene.add(new THREE.AmbientLight(0x8b96a8,0.55));
+  var sun = new THREE.DirectionalLight(0xfff3e0,1.3); sun.position.set(70,45,60); scene.add(sun);
+  var fill = new THREE.DirectionalLight(0xff7a94,0.16); fill.position.set(-60,-30,-50); scene.add(fill);
+
+  var starGeo = new THREE.BufferGeometry();
+  var N=1400, pos=new Float32Array(N*3);
+  for(var i=0;i<N;i++){
+    var r=300+Math.random()*450, th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
+    pos[i*3]=r*Math.sin(ph)*Math.cos(th); pos[i*3+1]=r*Math.sin(ph)*Math.sin(th); pos[i*3+2]=r*Math.cos(ph);
+  }
+  starGeo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ color:0xffffff, size:1.4, transparent:true, opacity:0.8 })));
+
+  function moonTexture(){
+    var c=document.createElement('canvas'); c.width=1200; c.height=600;
+    var ctx=c.getContext('2d');
+    var base=ctx.createLinearGradient(0,0,0,600);
+    base.addColorStop(0,'#c9c2b0'); base.addColorStop(1,'#a89f8c');
+    ctx.fillStyle=base; ctx.fillRect(0,0,1200,600);
+    for(var i=0;i<12;i++){
+      ctx.globalAlpha=0.15; ctx.fillStyle='#8d8672';
+      ctx.beginPath();
+      ctx.ellipse(Math.random()*1200, Math.random()*600, 70+Math.random()*140, 50+Math.random()*90, Math.random()*Math.PI, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.globalAlpha=1;
+    for(var j=0;j<380;j++){
+      var x=Math.random()*1200,y=Math.random()*600,r=1+Math.random()*8;
+      var g=ctx.createRadialGradient(x,y,0,x,y,r);
+      g.addColorStop(0,'rgba(64,60,52,0.5)'); g.addColorStop(1,'rgba(64,60,52,0)');
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    }
+    return new THREE.CanvasTexture(c);
+  }
+  var moon = new THREE.Mesh(
+    new THREE.SphereGeometry(RADIUS,96,96),
+    new THREE.MeshStandardMaterial({ map:moonTexture(), roughness:1, metalness:0 })
+  );
+  scene.add(moon);
+
+  var glow = new THREE.Mesh(
+    new THREE.SphereGeometry(RADIUS*1.02,48,48),
+    new THREE.ShaderMaterial({
+      side:THREE.BackSide, transparent:true, depthWrite:false,
+      uniforms:{ glowColor:{ value:new THREE.Color(0xff7a94) } },
+      vertexShader:'varying float rim; void main(){ vec3 n=normalize(mat3(modelMatrix)*normal); vec3 vd=normalize(cameraPosition-(modelMatrix*vec4(position,1.0)).xyz); rim=pow(1.0-max(dot(n,vd),0.0),4.0); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+      fragmentShader:'varying float rim; uniform vec3 glowColor; void main(){ gl_FragColor=vec4(glowColor, rim*0.3); }'
+    })
+  );
+  scene.add(glow);
+
+  /* ---------- markers ---------- */
+  var layer = document.getElementById('markerLayer');
+  var tooltip = document.getElementById('tooltip');
+  var els = [];
+  plots.forEach(function(p){
+    p.worldPos = surfacePoint(p.lat,p.lon,RADIUS);
+    p.normal = p.worldPos.clone().normalize();
+    var el = document.createElement('div');
+    el.className='marker';
+    el.innerHTML = '<span class="label">'+p.name+'</span><span class="ring"></span><img class="photo" src="'+p.photo+'" alt="" loading="lazy">';
+    el.addEventListener('click', function(e){ showTooltip(p, el); });
+    layer.appendChild(el);
+    els.push({p:p, el:el});
+  });
+
+  function showTooltip(p, el){
+    els.forEach(function(o){ o.el.classList.remove('active'); });
+    el.classList.add('active');
+    tooltip.innerHTML = '<div class="who">'+p.name+' — from '+p.from+'</div><div class="msg">\u201C'+p.message+'\u201D</div>';
+    var r = el.getBoundingClientRect(), sr = stage.getBoundingClientRect();
+    var left = r.left - sr.left - 90, top = r.top - sr.top - 96;
+    left = Math.max(6, Math.min(left, sr.width-226));
+    tooltip.style.left = left+'px'; tooltip.style.top = Math.max(6,top)+'px';
+    tooltip.classList.add('show');
+  }
+  document.addEventListener('click', function(e){
+    if(!e.target.closest('.marker') && !e.target.closest('.tooltip')){
+      tooltip.classList.remove('show');
+      els.forEach(function(o){ o.el.classList.remove('active'); });
+    }
+  });
+
+  var v = new THREE.Vector3(), camDir = new THREE.Vector3();
+  function updateMarkers(){
+    var rect = stage.getBoundingClientRect(), w=rect.width, h=rect.height;
+    els.forEach(function(o){
+      var p=o.p;
+      v.copy(p.worldPos).project(camera);
+      var behind = v.z>1;
+      camDir.copy(camera.position).sub(p.worldPos).normalize();
+      var facing = p.normal.dot(camDir);
+      var vis = THREE.MathUtils.smoothstep(facing,-0.08,0.2);
+      if(behind || vis<=0.01){ o.el.style.opacity=0; o.el.style.pointerEvents='none'; return; }
+      var x=(v.x*0.5+0.5)*w, y=(1-(v.y*0.5+0.5))*h;
+      o.el.style.transform = 'translate3d('+x+'px,'+y+'px,0) translate(-50%,-50%)';
+      o.el.style.opacity = vis.toFixed(2);
+      o.el.style.pointerEvents = 'auto';
+    });
+  }
+
+  function resize(){
+    var rect = stage.getBoundingClientRect();
+    if(rect.width<10 || rect.height<10) return;
+    camera.aspect = rect.width/rect.height; camera.updateProjectionMatrix();
+    renderer.setSize(rect.width, rect.height, false);
+  }
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', function(){ setTimeout(resize,150); });
+  if(window.ResizeObserver){ new ResizeObserver(resize).observe(stage); }
+  resize();
+  setTimeout(resize,200); // fonts/layout can settle a beat late on first paint
+
+  (function loop(){
+    controls.update();
+    updateMarkers();
+    renderer.render(scene, camera);
+    requestAnimationFrame(loop);
+  })();
+
+  (function countUp(){
+    function run(id, target, suffix){
+      var el = document.getElementById(id), t0=performance.now(), dur=1100;
+      function step(now){
+        var t=Math.min(1,(now-t0)/dur);
+        el.textContent = Math.round(target*(1-Math.pow(1-t,3))).toLocaleString() + (suffix||'');
+        if(t<1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+    run('statPlots', 3241, '');
+    run('statCountries', 92, '');
+  })();
+
+  /* ---------- faq accordion ---------- */
+  document.querySelectorAll('.faq-item').forEach(function(item){
+    var q = item.querySelector('.faq-q'), a = item.querySelector('.faq-a');
+    q.addEventListener('click', function(){
+      var isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(function(o){
+        o.classList.remove('open');
+        o.querySelector('.faq-a').style.maxHeight = null;
+      });
+      if(!isOpen){
+        item.classList.add('open');
+        a.style.maxHeight = a.scrollHeight + 'px';
+      }
+    });
+  });
+
+})();
+</script>
+</body>
+</html>

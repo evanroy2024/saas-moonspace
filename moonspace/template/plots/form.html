@@ -1,0 +1,1228 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moonspace — Give them the Moon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  @property --angle{
+    syntax:'<angle>';
+    inherits:false;
+    initial-value:0deg;
+  }
+
+  :root{
+    --night-950:#07091a;
+    --night-800:#131832;
+    --line:#272d54;
+    --cream:#f5f1e6;
+    --silver:#c7cbda;
+    --silver-dim:#848ba8;
+    --gold:#e7b75f;
+    --gold-soft:#f2d18f;
+    --gold-dim:#8a733f;
+    --violet:#7c6ce0;
+    --radius:14px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--night-950);
+    color:var(--cream);
+    font-family:'Inter', sans-serif;
+    line-height:1.5;
+    padding:40px 20px 60px;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  a{color:inherit;}
+
+  /* ---------- Ambient sky ---------- */
+  .sky-parallax{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    transition:transform .6s ease-out;
+    will-change:transform;
+  }
+
+  .vignette{
+    position:absolute; inset:0;
+    background:radial-gradient(ellipse 120% 90% at 50% 30%, transparent 40%, rgba(4,5,14,0.55) 100%);
+  }
+
+  .stars-layer{position:absolute; inset:-5%; width:110vw; height:110vh;}
+  #stars-small{width:1px; height:1px; background:transparent; animation:drift 95s linear infinite;}
+  #stars-big{width:2px; height:2px; background:transparent; animation:drift 70s linear infinite reverse;}
+  #stars-twinkle{width:2px; height:2px; background:transparent; animation:drift 85s linear infinite, twinkle 3.5s ease-in-out infinite;}
+
+  @keyframes drift{
+    from{transform:translate(0,0);}
+    to{transform:translate(-130px,-95px);}
+  }
+
+  @keyframes twinkle{
+    0%,100%{opacity:.25;}
+    50%{opacity:1;}
+  }
+
+  .nebula-warm{
+    position:absolute; width:640px; height:640px; border-radius:50%;
+    top:-260px; left:50%;
+    background:radial-gradient(circle, rgba(231,183,95,0.16), transparent 68%);
+    filter:blur(60px);
+    animation:nebula-pulse 10s ease-in-out infinite;
+  }
+
+  .nebula-cool{
+    position:absolute; width:560px; height:560px; border-radius:50%;
+    bottom:-260px; right:-160px;
+    background:radial-gradient(circle, rgba(124,108,224,0.10), transparent 70%);
+    filter:blur(60px);
+    animation:nebula-pulse-alt 13s ease-in-out infinite;
+  }
+
+  @keyframes nebula-pulse{
+    0%,100%{opacity:.55; transform:translate(-50%, 0) scale(1);}
+    50%{opacity:1; transform:translate(calc(-50% + 26px), 34px) scale(1.1);}
+  }
+
+  @keyframes nebula-pulse-alt{
+    0%,100%{opacity:.45; transform:translate(0, 0) scale(1);}
+    50%{opacity:.9; transform:translate(-34px, -26px) scale(1.12);}
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    max-width:480px;
+    margin:0 auto 30px;
+    text-align:center;
+    position:relative;
+    z-index:1;
+  }
+
+  .hero-moon-wrap{
+    position:relative;
+    width:38px; height:38px;
+    margin:0 auto 12px;
+  }
+
+  .hero-moon-halo{
+    position:absolute; inset:-16px; border-radius:50%;
+    background:radial-gradient(circle, rgba(242,209,143,0.55), rgba(231,183,95,0.12) 55%, transparent 75%);
+    filter:blur(6px);
+    animation:hero-halo 4s ease-in-out infinite;
+  }
+
+  .hero-moon-ring{
+    position:absolute; inset:-6px; border-radius:50%;
+    border:1px solid rgba(242,209,143,0.25);
+    animation:ring-breathe 4s ease-in-out infinite;
+  }
+
+  .hero-moon{
+    position:relative; z-index:1; width:38px; height:38px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fffaf0, var(--gold-soft) 45%, var(--gold) 78%, var(--gold-dim) 100%);
+    box-shadow:0 0 20px rgba(242,209,143,0.55), 0 0 40px rgba(231,183,95,0.28), inset -5px -4px 10px rgba(80,55,10,0.35);
+    animation:moon-float 6s ease-in-out infinite;
+  }
+
+  @keyframes hero-halo{
+    0%,100%{opacity:.7; transform:scale(1);}
+    50%{opacity:1; transform:scale(1.25);}
+  }
+
+  @keyframes ring-breathe{
+    0%,100%{opacity:.5; transform:scale(1);}
+    50%{opacity:1; transform:scale(1.15);}
+  }
+
+  @keyframes moon-float{
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(-4px);}
+  }
+
+  .hero h1{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-style:italic;
+    font-size:clamp(21px, 6vw, 28px);
+    line-height:1.32;
+    margin:0 auto;
+    max-width:400px;
+  }
+
+  .plot-badge{
+    display:inline-block;
+    margin:18px auto 0;
+    padding:4px 10px;
+    border:1px solid var(--line);
+    border-radius:20px;
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:10.5px;
+    letter-spacing:0.4px;
+    color:var(--silver-dim);
+    background:rgba(255,255,255,0.02);
+  }
+
+  /* ---------- Layout ---------- */
+  .page{max-width:560px; margin:0 auto; position:relative; z-index:1;}
+
+  /* ---------- Plan buttons ---------- */
+  .plan-select{display:flex; gap:12px;}
+
+  .plan-btn{
+    position:relative;
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    background:var(--night-800);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:16px 10px;
+    cursor:pointer;
+    font-family:'Inter', sans-serif;
+    color:var(--cream);
+    transition:border-color .2s ease, transform .15s ease;
+  }
+
+  .plan-btn:hover{border-color:var(--gold-dim); transform:translateY(-2px);}
+  .plan-btn:active{transform:translateY(0) scale(.98);}
+
+  .plan-btn.selected::before{
+    content:'';
+    position:absolute;
+    inset:-2px;
+    border-radius:14px;
+    padding:2px;
+    background:conic-gradient(from var(--angle,0deg), var(--gold), var(--violet), var(--gold));
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite:xor;
+    mask-composite:exclude;
+    animation:rotate-border 3.5s linear infinite;
+    pointer-events:none;
+  }
+
+  @keyframes rotate-border{to{--angle:360deg;}}
+
+  .plan-btn-text{display:flex; align-items:baseline; gap:7px; white-space:nowrap;}
+  .plan-btn-name{font-family:'Fraunces', serif; font-size:15px; font-weight:500;}
+  .plan-btn-price{font-size:12.5px; color:var(--gold);}
+
+  .plan-btn-text{width:100%; justify-content:center;}
+
+  .plan-note{
+    text-align:center;
+    font-size:12.5px;
+    color:var(--silver-dim);
+    font-style:italic;
+    margin:12px 0 0;
+  }
+
+  /* ---------- Generic modal shell ---------- */
+  .modal-overlay{
+    display:none; position:fixed; inset:0;
+    background:rgba(5,6,15,0.75);
+    backdrop-filter:blur(3px);
+    align-items:center; justify-content:center;
+    padding:20px; z-index:50;
+  }
+
+  .modal-overlay.open{display:flex;}
+
+  .modal{
+    position:relative; width:100%; max-width:400px;
+    background:var(--night-800);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:32px 28px 28px;
+    box-shadow:0 30px 60px rgba(0,0,0,0.5);
+    animation:modal-in .25s ease;
+    max-height:88vh;
+    overflow-y:auto;
+  }
+
+  @keyframes modal-in{
+    from{opacity:0; transform:translateY(10px) scale(.98);}
+    to{opacity:1; transform:translateY(0) scale(1);}
+  }
+
+  .modal-close{
+    position:absolute; top:14px; right:14px;
+    width:28px; height:28px; border-radius:50%;
+    border:1px solid var(--line); background:transparent;
+    color:var(--silver); font-size:15px; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:border-color .2s ease, color .2s ease;
+    z-index:2;
+  }
+
+  .modal-close:hover{border-color:var(--gold); color:var(--gold);}
+
+  .modal-phase{width:34px; height:34px; border-radius:50%; margin-bottom:16px;}
+
+  .modal h3{font-family:'Fraunces', serif; font-style:italic; font-weight:500; font-size:23px; margin:0 0 2px;}
+  .modal-price{font-family:'Fraunces', serif; color:var(--gold); font-size:17px; margin:0 0 16px;}
+  .modal-body{color:var(--silver); font-size:14px; line-height:1.6; margin:0 0 18px;}
+
+  .modal-features{list-style:none; padding:0; margin:0 0 24px; font-size:13.5px; color:var(--silver);}
+  .modal-features li{position:relative; padding:8px 0 8px 22px; border-top:1px solid var(--line);}
+  .modal-features li:first-child{border-top:none; padding-top:0;}
+  .modal-features li::before{
+    content:'\2726';
+    position:absolute; left:0; top:9px;
+    font-size:10px; color:var(--gold);
+  }
+  .modal-features li:first-child::before{top:1px;}
+
+  .modal-choose{
+    width:100%; padding:13px; border:0; border-radius:8px;
+    background:var(--gold); color:var(--night-950);
+    font-family:'Inter', sans-serif; font-weight:600; font-size:14.5px; cursor:pointer;
+    transition:filter .15s ease;
+  }
+
+  .modal-choose:hover{filter:brightness(1.08);}
+
+  .modal-choose.secondary{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--silver);
+  }
+
+  .modal-choose.secondary:hover{border-color:var(--gold-dim); color:var(--cream); filter:none;}
+
+  .phase-crescent{background:var(--night-950); box-shadow:inset 5px -1px 0 0 var(--cream); border:1px solid var(--silver-dim);}
+  .phase-full{background:radial-gradient(circle at 35% 30%, #fdf6e3, var(--cream) 60%, #d9d2bd 100%);}
+
+  /* ---------- Form panel ---------- */
+  .form-section{margin-top:26px;}
+
+  .panel{
+    position:relative;
+    background:var(--night-800);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:36px;
+    overflow:hidden;
+  }
+
+  .panel::before{
+    content:'';
+    position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg, var(--gold), var(--gold-soft), var(--violet));
+  }
+
+  @media (max-width:480px){.panel{padding:22px;}}
+
+  .panel-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:26px;
+    padding-bottom:22px;
+    border-bottom:1px solid var(--line);
+  }
+
+  .panel-head-text{flex:1; min-width:0;}
+
+  .panel-head h2{
+    font-family:'Fraunces', serif; font-weight:500; font-style:italic; font-size:23px; margin:0 0 8px;
+  }
+
+  .panel-head p{color:var(--silver); font-size:13.5px; margin:0; max-width:360px;}
+
+  .mini-moon-wrap{position:relative; width:58px; height:58px; flex-shrink:0;}
+
+  .mini-moon-halo{
+    position:absolute; inset:-14px; border-radius:50%;
+    background:radial-gradient(circle, rgba(242,209,143,0.4), transparent 70%);
+    filter:blur(6px);
+    animation:halo-pulse 4.2s ease-in-out infinite;
+  }
+
+  .mini-moon{
+    position:relative; z-index:1; width:58px; height:58px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fdf6e3, var(--cream) 55%, #d9d2bd 100%);
+    background-size:cover; background-position:center;
+    box-shadow:0 0 22px rgba(243,239,228,0.32), inset -7px -5px 13px rgba(0,0,0,0.16);
+    animation:moon-float 6s ease-in-out infinite;
+    transition:box-shadow .3s ease;
+  }
+
+  .mini-moon.has-image{box-shadow:0 0 30px rgba(231,183,95,0.55), inset -7px -5px 15px rgba(0,0,0,0.4);}
+
+  @keyframes halo-pulse{
+    0%,100%{opacity:.55; transform:scale(1);}
+    50%{opacity:1; transform:scale(1.2);}
+  }
+
+  @media (max-width:480px){
+    .mini-moon-wrap, .mini-moon{width:44px; height:44px;}
+    .panel-head p{max-width:100%;}
+  }
+
+  label{display:block; font-size:13px; color:var(--silver); margin:20px 0 7px;}
+  label:first-of-type{margin-top:0;}
+
+  input[type="text"], input[type="email"], select, textarea{
+    width:100%;
+    background:var(--night-950);
+    border:1px solid var(--line);
+    color:var(--cream);
+    border-radius:8px;
+    padding:11px 13px;
+    font-family:'Inter', sans-serif;
+    font-size:14.5px;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+
+  input[type="text"]:focus, input[type="email"]:focus, select:focus, textarea:focus{
+    outline:none;
+    border-color:var(--gold-dim);
+    box-shadow:0 0 0 3px rgba(231,183,95,0.14);
+  }
+
+  textarea{min-height:96px; resize:vertical; font-family:'Inter', sans-serif;}
+
+  .row-two{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:520px){.row-two{grid-template-columns:1fr;}}
+
+  /* ---------- Song picker button ---------- */
+  .picker-btn{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    background:var(--night-950);
+    border:1px solid var(--line);
+    color:var(--cream);
+    border-radius:8px;
+    padding:12px 14px;
+    font-family:'Inter', sans-serif;
+    font-size:14.5px;
+    cursor:pointer;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+
+  .picker-btn:hover{border-color:var(--gold-dim);}
+  .picker-btn.has-value{border-color:var(--gold-dim);}
+
+  #song-picker-label{color:var(--silver-dim);}
+  .picker-btn.has-value #song-picker-label{color:var(--cream);}
+
+  .picker-btn-arrow{color:var(--gold); font-size:14px; flex-shrink:0;}
+
+  /* ---------- Song modal ---------- */
+  .song-modal{max-width:440px; padding:28px 22px 24px;}
+
+  .song-modal-head{margin-bottom:18px;}
+  .song-modal-head h3{margin-bottom:4px;}
+  .song-modal-head p{color:var(--silver-dim); font-size:13px; margin:0;}
+
+  .song-modal-list{display:flex; flex-direction:column; gap:10px;}
+
+  .song-row{
+    position:relative;
+    display:flex; align-items:center; gap:12px;
+    background:var(--night-950);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 12px;
+    transition:border-color .18s ease, background .18s ease, transform .12s ease;
+  }
+
+  .song-row:hover{border-color:var(--gold-dim); transform:translateY(-1px);}
+
+  .song-row.selected{
+    border-color:var(--gold);
+    background:linear-gradient(90deg, rgba(231,183,95,0.10), rgba(124,108,224,0.05));
+  }
+
+  .song-index{
+    flex-shrink:0;
+    width:22px;
+    text-align:center;
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:12px;
+    color:var(--silver-dim);
+  }
+
+  .song-row.selected .song-index{color:var(--gold);}
+
+  .song-play{
+    width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    border:1px solid var(--line);
+    background:var(--night-800);
+    color:var(--gold);
+    font-size:12px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, color .15s ease, transform .1s ease;
+  }
+
+  .song-play:hover{border-color:var(--gold); transform:scale(1.05);}
+  .song-play.playing{background:var(--gold); color:var(--night-950); border-color:var(--gold);}
+
+  .song-row-info{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
+  .song-row-name{font-family:'Fraunces', serif; font-size:14.5px; color:var(--cream); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .song-row-artist{font-size:11px; color:var(--silver-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+  .song-wave{
+    display:flex; align-items:center; gap:2px; height:12px; margin-top:2px;
+  }
+  .song-wave span{
+    display:block; width:2px; border-radius:2px;
+    background:var(--line);
+    height:4px;
+    transition:background .15s ease;
+  }
+  .song-row.selected .song-wave span{background:var(--gold-dim);}
+  .song-row[data-playing="true"] .song-wave span{
+    background:var(--gold);
+    animation:wave-bounce 0.9s ease-in-out infinite;
+  }
+  .song-row[data-playing="true"] .song-wave span:nth-child(1){animation-delay:0s; height:5px;}
+  .song-row[data-playing="true"] .song-wave span:nth-child(2){animation-delay:.15s; height:9px;}
+  .song-row[data-playing="true"] .song-wave span:nth-child(3){animation-delay:.3s; height:6px;}
+  .song-row[data-playing="true"] .song-wave span:nth-child(4){animation-delay:.45s; height:11px;}
+  .song-row[data-playing="true"] .song-wave span:nth-child(5){animation-delay:.6s; height:5px;}
+
+  @keyframes wave-bounce{
+    0%,100%{transform:scaleY(0.6);}
+    50%{transform:scaleY(1.5);}
+  }
+
+  .song-select-btn{
+    flex-shrink:0;
+    width:34px; height:34px;
+    border-radius:50%;
+    border:1px solid var(--gold-dim);
+    background:transparent;
+    color:var(--gold-soft);
+    font-size:13px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:background .15s ease, color .15s ease, transform .1s ease;
+  }
+
+  .song-select-btn:hover{background:var(--gold); color:var(--night-950); border-color:var(--gold); transform:scale(1.06);}
+  .song-row.selected .song-select-btn{background:var(--gold); color:var(--night-950); border-color:var(--gold);}
+
+  /* ---------- Theme (design) grid ---------- */
+  .design-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:10px;
+    margin-top:8px;
+  }
+  @media (max-width:520px){.design-grid{grid-template-columns:repeat(2, 1fr);}}
+
+  .design-box{
+    position:relative;
+    border:1px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+    cursor:pointer;
+    aspect-ratio:1/1;
+    background:var(--night-950);
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+
+  .design-box:hover{border-color:var(--gold-dim);}
+
+  .design-box img{
+    width:100%; height:100%;
+    object-fit:cover;
+    display:block;
+    opacity:.85;
+    transition:opacity .15s ease;
+  }
+
+  .design-box:hover img{opacity:1;}
+
+  .design-box.selected{border-color:var(--gold); box-shadow:0 0 0 2px rgba(231,183,95,0.35);}
+
+  .design-box.selected::before{
+    content:'\2713';
+    position:absolute; top:4px; left:4px; z-index:2;
+    width:18px; height:18px; border-radius:50%;
+    background:var(--gold); color:var(--night-950);
+    font-size:10px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .design-name{
+    position:absolute; bottom:0; left:0; right:0; z-index:1;
+    padding:5px 6px 4px;
+    font-size:11px; text-align:center;
+    color:var(--cream);
+    background:linear-gradient(transparent, rgba(7,9,26,0.9));
+  }
+
+  /* locked theme state */
+  .design-box.locked{cursor:not-allowed;}
+  .design-box.locked img{opacity:.3; filter:grayscale(60%);}
+  .design-box.locked:hover{border-color:var(--line);}
+  .design-box.locked:hover img{opacity:.3;}
+
+  .design-lock-overlay{
+    position:absolute; inset:0; z-index:2;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
+    background:rgba(7,9,26,0.55);
+  }
+
+  .design-lock-icon{
+    width:26px; height:26px; border-radius:50%;
+    background:var(--night-800);
+    border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--silver-dim);
+    font-size:11px;
+  }
+
+  .design-lock-label{
+    font-size:9.5px;
+    letter-spacing:.4px;
+    text-transform:uppercase;
+    color:var(--silver-dim);
+    background:rgba(7,9,26,0.7);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:2px 7px;
+  }
+
+  .field-hint{font-size:12px; color:var(--silver-dim); margin-top:6px;}
+
+  /* ---------- Fullscreen theme preview ---------- */
+  .design-fullscreen-overlay{
+    display:none;
+    position:fixed; inset:0;
+    background:var(--night-950);
+    z-index:60;
+    flex-direction:column;
+  }
+  .design-fullscreen-overlay.open{display:flex;}
+
+  .design-fs-bar{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+    padding:12px 16px;
+    background:var(--night-800);
+    border-bottom:1px solid var(--line);
+    flex-shrink:0;
+  }
+
+  .design-fs-title{
+    font-family:'Fraunces', serif; font-style:italic; font-size:14px; color:var(--silver);
+  }
+
+  .design-fs-actions{display:flex; gap:8px;}
+
+  .design-fs-btn{
+    padding:9px 16px;
+    border-radius:8px;
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    border:1px solid var(--line);
+    background:transparent;
+    color:var(--silver);
+    transition:filter .15s ease, border-color .15s ease, background .15s ease, color .15s ease;
+  }
+
+  .design-fs-btn.close-btn:hover{border-color:var(--gold-dim); color:var(--cream);}
+
+  .design-fs-btn.select-btn{
+    background:var(--gold);
+    color:var(--night-950);
+    border-color:var(--gold);
+  }
+  .design-fs-btn.select-btn:hover{filter:brightness(1.08);}
+
+  .design-fs-frame-wrap{flex:1; position:relative;}
+  .design-fs-frame-wrap iframe{
+    position:absolute; inset:0;
+    width:100%; height:100%;
+    border:0;
+    background:var(--night-950);
+  }
+
+  .file-field{position:relative; margin-top:20px;}
+  .file-field input[type="file"]{position:absolute; inset:0; opacity:0; cursor:pointer;}
+
+  .file-visual{
+    border:1px dashed var(--line); border-radius:8px; padding:16px 14px;
+    font-size:13.5px; color:var(--silver-dim); text-align:center;
+    transition:border-color .15s ease, color .15s ease;
+  }
+
+  .file-field:hover .file-visual{border-color:var(--gold-dim); color:var(--silver);}
+
+  .reply-field{
+    margin-top:22px; display:flex; align-items:flex-start; gap:10px;
+    background:rgba(231,183,95,0.06);
+    border:1px solid rgba(231,183,95,0.25);
+    border-radius:8px; padding:14px 16px;
+  }
+
+  .reply-field input{margin-top:3px; width:auto; accent-color:var(--gold);}
+  .reply-field .reply-text strong{display:block; font-size:13.5px; color:var(--cream); font-weight:500; margin-bottom:2px;}
+  .reply-field .reply-text span{font-size:12.5px; color:var(--silver-dim);}
+  .reply-field.hidden{display:none;}
+
+  button[type="submit"]{
+    position:relative;
+    overflow:hidden;
+    width:100%;
+    margin-top:28px;
+    padding:14px;
+    border:0;
+    border-radius:8px;
+    background:var(--gold);
+    color:var(--night-950);
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+    transition:filter .15s ease, transform .1s ease;
+  }
+
+  button[type="submit"]::after{
+    content:'';
+    position:absolute; top:0; left:-60%; width:40%; height:100%;
+    background:linear-gradient(120deg, transparent, rgba(255,255,255,0.4), transparent);
+    transform:skewX(-20deg);
+    transition:left .5s ease;
+  }
+
+  button[type="submit"]:hover::after{left:120%;}
+  button[type="submit"]:hover{filter:brightness(1.06);}
+  button[type="submit"]:active{transform:scale(.99);}
+
+  .fine-print{text-align:center; font-size:12px; color:var(--silver-dim); margin-top:14px;}
+
+  @media (max-width:480px){
+    body{padding:30px 16px 44px;}
+    .hero{margin-bottom:24px;}
+    .hero-moon-wrap, .hero-moon{width:32px; height:32px;}
+    .hero-moon-halo{width:32px; height:32px; inset:-14px;}
+    .hero-moon-ring{inset:-5px;}
+    .hero h1{font-size:clamp(19px, 6.2vw, 24px); margin-bottom:8px;}
+    .hero p{font-size:13.5px;}
+    .plot-badge{margin-top:12px; font-size:10px; padding:3px 9px;}
+    .plan-btn{padding:13px 6px;}
+    .plan-btn-name{font-size:13.5px;}
+    .plan-btn-price{font-size:11.5px;}
+    .panel{padding:18px;}
+    .design-fs-bar{padding:10px 12px;}
+    .design-fs-title{display:none;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .mini-moon, .mini-moon-halo, .hero-moon, .hero-moon-halo, .hero-moon-ring,
+    .nebula-warm, .nebula-cool, #stars-small, #stars-big, #stars-twinkle, .plan-btn.selected::before,
+    .song-row[data-playing="true"] .song-wave span{
+      animation:none !important;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="sky-parallax" id="sky-parallax">
+  <div class="stars-layer" id="stars-small"></div>
+  <div class="stars-layer" id="stars-big"></div>
+  <div class="stars-layer" id="stars-twinkle"></div>
+  <div class="nebula-warm"></div>
+  <div class="nebula-cool"></div>
+  <div class="vignette"></div>
+</div>
+
+<div class="page">
+
+<div class="hero">
+  <div class="hero-moon-wrap">
+    <div class="hero-moon-halo"></div>
+    <div class="hero-moon-ring"></div>
+    <div class="hero-moon"></div>
+  </div>
+  <h1>Everyone says "I'd give you the Moon." Now you actually can.</h1>
+  <div class="plot-badge" id="plot-number">LUNA-00000000</div>
+</div>
+
+<!-- Plan selector -->
+<div class="plan-select">
+  <button type="button" class="plan-btn selected" data-plan="memory" onclick="openModal('memory')">
+    <span class="plan-btn-text">
+      <span class="plan-btn-name">Moon Memory</span>
+      <span class="plan-btn-price">$10</span>
+    </span>
+  </button>
+  <button type="button" class="plan-btn" data-plan="forever" onclick="openModal('forever')">
+    <span class="plan-btn-text">
+      <span class="plan-btn-name">Moon Forever</span>
+      <span class="plan-btn-price">$15</span>
+    </span>
+  </button>
+</div>
+<p class="plan-note" id="plan-note">You're creating a Moon Memory.</p>
+
+<!-- Plan details modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this) closeModal()">
+  <div class="modal">
+    <button type="button" class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+    <div class="modal-phase" id="modal-phase"></div>
+    <h3 id="modal-title">Moon Memory</h3>
+    <p class="modal-price" id="modal-price">$10</p>
+    <p class="modal-body" id="modal-body"></p>
+    <ul class="modal-features" id="modal-features"></ul>
+    <button type="button" class="modal-choose" id="modal-choose" onclick="choosePlanFromModal()">Choose Moon Memory</button>
+  </div>
+</div>
+
+<!-- Song picker modal -->
+<div class="modal-overlay" id="song-modal-overlay" onclick="if(event.target===this) closeSongModal()">
+  <div class="modal song-modal">
+    <button type="button" class="modal-close" onclick="closeSongModal()" aria-label="Close">&times;</button>
+    <div class="song-modal-head">
+      <h3>Choose a song</h3>
+      <p>Preview any track, then pick the one that's theirs.</p>
+    </div>
+    <div class="song-modal-list" id="song-modal-list">
+      {% for i in songs|slice:":6" %}
+        <div class="song-row" data-song="{{ i }}">
+          <span class="song-index">{{ forloop.counter }}</span>
+          <button type="button" class="song-play" data-song-play="{{ i }}" onclick="toggleSongPlay(event, '{{ i }}')" aria-label="Play preview">&#9654;</button>
+          <div class="song-row-info">
+            <span class="song-row-name">
+              {% if forloop.counter == 1 %}Love Me Like You Do
+              {% elif forloop.counter == 2 %}I Choose You
+              {% elif forloop.counter == 3 %}Where the Roots
+              {% elif forloop.counter == 4 %}Bring the Moon
+              {% elif forloop.counter == 5 %}Proposal
+              {% elif forloop.counter == 6 %}Before the Wind
+              {% else %}Song {{ i }}
+              {% endif %}
+            </span>
+            <span class="song-row-artist">Moonspace Originals</span>
+            <span class="song-wave">
+              <span></span><span></span><span></span><span></span><span></span>
+            </span>
+          </div>
+          <button type="button" class="song-select-btn" onclick="chooseSong('{{ i }}')" aria-label="Select this song">&#10003;</button>
+          <audio id="audio-song-{{ i }}" preload="none" src="{% get_static_prefix %}songs/{{ i }}.mp3" onended="onSongEnded('{{ i }}')"></audio>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Fullscreen theme preview -->
+<div class="design-fullscreen-overlay" id="design-fs-overlay">
+  <div class="design-fs-bar">
+    <span class="design-fs-title" id="design-fs-title">Theme preview</span>
+    <div class="design-fs-actions">
+      <button type="button" class="design-fs-btn close-btn" onclick="closeDesignModal()">Close</button>
+      <button type="button" class="design-fs-btn select-btn" onclick="chooseDesign()">Select</button>
+    </div>
+  </div>
+  <div class="design-fs-frame-wrap">
+    <iframe id="design-iframe" src="about:blank" loading="lazy" title="Theme preview"></iframe>
+  </div>
+</div>
+
+<!-- Form -->
+<div class="form-section" id="form-section">
+
+  <div class="panel">
+
+    <div class="panel-head">
+      <div class="panel-head-text">
+        <h2 id="panel-title">Your Moon Memory</h2>
+        <p id="panel-subtitle">A lasting keepsake: your message, a song, and an image, sent as a link they'll open under the night sky.</p>
+      </div>
+      <div class="mini-moon-wrap">
+        <div class="mini-moon-halo"></div>
+        <div class="mini-moon" id="moon-visual"></div>
+      </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" id="moon-form" onsubmit="return validateBeforeSubmit();">
+      {% csrf_token %}
+      <input type="hidden" name="plan" id="plan_input" value="memory">
+
+      <div class="row-two">
+        <div>
+          <label for="buyer_name">Your name</label>
+          <input type="text" name="buyer_name" id="buyer_name" required>
+        </div>
+        <div>
+          <label for="receiver_name">Their name</label>
+          <input type="text" name="receiver_name" id="receiver_name">
+        </div>
+      </div>
+
+      <label for="email">Your email</label>
+      <input type="email" name="email" id="email">
+
+      <label for="message">Your message</label>
+      <textarea name="message" id="message" placeholder="Write something only they'll understand..."></textarea>
+
+      <label>Song</label>
+      <input type="hidden" name="song" id="song">
+      <button type="button" class="picker-btn" id="song-picker-btn" onclick="openSongModal()">
+        <span id="song-picker-label">Choose a song</span>
+        <span class="picker-btn-arrow">&#9654;</span>
+      </button>
+      <p class="field-hint">You'll be able to preview each track before picking one.</p>
+
+      <label>Theme</label>
+      <input type="hidden" name="design" id="design">
+      <div class="design-grid" id="design-grid">
+        {% for i in designs|slice:":6" %}
+          {% if forloop.counter <= 4 %}
+            <div class="design-box" data-design="{{ i }}" onclick="openDesignModal('{{ i }}', {{ forloop.counter }})">
+              <img src="https://picsum.photos/seed/moontheme{{ i }}/300/300" alt="Theme {{ forloop.counter }}" loading="lazy">
+              <span class="design-name">Theme {{ forloop.counter }}</span>
+            </div>
+          {% else %}
+            <div class="design-box locked" data-design="{{ i }}" aria-disabled="true">
+              <img src="https://picsum.photos/seed/moontheme{{ i }}/300/300" alt="Theme {{ forloop.counter }}" loading="lazy">
+              <div class="design-lock-overlay">
+                <div class="design-lock-icon">&#128274;</div>
+                <span class="design-lock-label">Coming soon</span>
+              </div>
+              <span class="design-name">Theme {{ forloop.counter }}</span>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      <p class="field-hint">Tap a theme to preview it full screen, then select it. Two themes are launching soon.</p>
+
+      <div class="file-field">
+        <label for="image" style="margin-top:0;">Image</label>
+        <input type="file" name="image" id="image" accept="image/*" onchange="updateFileName(this)">
+        <div class="file-visual" id="file-visual">Choose a photo to include</div>
+      </div>
+
+      <div class="reply-field hidden" id="reply-field">
+        <input type="checkbox" name="wants_reply" id="wants_reply">
+        <label for="wants_reply" class="reply-text" style="margin:0;">
+          <strong>Let them reply</strong>
+          <span>They'll be able to send a message back to you from their Moonspace.</span>
+        </label>
+      </div>
+
+      <button type="submit" id="submit-btn">Create Moon Memory — $10</button>
+      <p class="fine-print">You'll receive your purchase details and preview link by email. We hope you have a lovely future together.</p>
+
+    </form>
+
+  </div>
+
+</div>
+
+</div>
+
+<script>
+  const plans = {
+    memory: {
+      name: "Moon Memory",
+      price: "$10",
+      phase: "phase-crescent",
+      modalBody: "For less than the price of a bunch of flowers, they get something flowers can't do \u2014 a real named spot on the Moon, held for them, forever. Takes two minutes to make, and they'll never forget who gave it to them.",
+      features: [
+        "An actual named spot on the Moon, forever theirs",
+        "Your own words, a song, and a photo, all in one place",
+        "A private link they open like unwrapping a gift",
+        "Ready to send in under two minutes"
+      ],
+      title: "Your Moon Memory",
+      subtitle: "A lasting keepsake: your message, a song, and an image, sent as a link they'll open under the night sky.",
+      button: "Create Moon Memory \u2014 $10",
+      reply: false
+    },
+    forever: {
+      name: "Moon Forever",
+      price: "$15",
+      phase: "phase-full",
+      modalBody: "Everything in Moon Memory, plus the one thing a gift can't usually do \u2014 answer back. For $5 more, this becomes a conversation instead of a one-way moment, and that's what makes people keep it forever.",
+      features: [
+        "Everything in Moon Memory, no compromises",
+        "They can reply, right from their Moonspace",
+        "Turns a gift into an ongoing exchange",
+        "Our most-loved option, for good reason"
+      ],
+      title: "Your Moon Forever",
+      subtitle: "Everything in Moon Memory, plus a reply-back option \u2014 so the moment becomes a conversation.",
+      button: "Create Moon Forever \u2014 $15",
+      reply: true
+    }
+  };
+
+  let modalPlanKey = null;
+  let currentlyPlaying = null;
+  let modalDesignKey = null;
+
+  // Theme preview URLs: domain/theme1, domain/theme2, ... matched to display position (1-4 unlocked)
+  const designPreviewUrls = {
+    {% for i in designs|slice:":4" %}"{{ i }}": "https://domain.com/theme{{ forloop.counter }}"{% if not forloop.last %},{% endif %}{% endfor %}
+  };
+
+  // ---------- Plan modal ----------
+  function openModal(planKey){
+    modalPlanKey = planKey;
+    const plan = plans[planKey];
+
+    document.getElementById('modal-title').textContent = plan.name;
+    document.getElementById('modal-price').textContent = plan.price;
+    document.getElementById('modal-body').textContent = plan.modalBody;
+    document.getElementById('modal-choose').textContent = "Choose " + plan.name;
+
+    const phase = document.getElementById('modal-phase');
+    phase.className = 'modal-phase ' + plan.phase;
+
+    const list = document.getElementById('modal-features');
+    list.innerHTML = '';
+    plan.features.forEach(f => {
+      const li = document.createElement('li');
+      li.textContent = f;
+      list.appendChild(li);
+    });
+
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function closeModal(){
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+
+  function choosePlanFromModal(){
+    selectPlan(modalPlanKey);
+    closeModal();
+  }
+
+  function selectPlan(planKey){
+    document.querySelectorAll('.plan-btn').forEach(el => {
+      el.classList.toggle('selected', el.dataset.plan === planKey);
+    });
+
+    const plan = plans[planKey];
+    document.getElementById('plan-note').textContent = "You're creating a " + plan.name + ".";
+    document.getElementById('panel-title').textContent = plan.title;
+    document.getElementById('panel-subtitle').textContent = plan.subtitle;
+    document.getElementById('submit-btn').textContent = plan.button;
+    document.getElementById('plan_input').value = planKey;
+
+    const replyField = document.getElementById('reply-field');
+    const replyCheckbox = document.getElementById('wants_reply');
+
+    if(plan.reply){
+      replyField.classList.remove('hidden');
+    } else {
+      replyField.classList.add('hidden');
+      replyCheckbox.checked = false;
+    }
+  }
+
+  // ---------- Song picker modal ----------
+  function openSongModal(){
+    document.getElementById('song-modal-overlay').classList.add('open');
+  }
+
+  function stopCurrentPreview(){
+    if(currentlyPlaying){
+      const audio = document.getElementById('audio-song-' + currentlyPlaying);
+      const btn = document.querySelector('[data-song-play="' + currentlyPlaying + '"]');
+      const row = btn ? btn.closest('.song-row') : null;
+      if(audio){ audio.pause(); audio.currentTime = 0; }
+      if(btn){ btn.classList.remove('playing'); btn.innerHTML = '&#9654;'; }
+      if(row){ row.removeAttribute('data-playing'); }
+      currentlyPlaying = null;
+    }
+  }
+
+  function closeSongModal(){
+    stopCurrentPreview();
+    document.getElementById('song-modal-overlay').classList.remove('open');
+  }
+
+  function toggleSongPlay(event, songId){
+    event.stopPropagation();
+
+    const audio = document.getElementById('audio-song-' + songId);
+    const playBtn = document.querySelector('[data-song-play="' + songId + '"]');
+    const row = playBtn.closest('.song-row');
+
+    if(currentlyPlaying && currentlyPlaying !== songId){
+      const prevAudio = document.getElementById('audio-song-' + currentlyPlaying);
+      const prevBtn = document.querySelector('[data-song-play="' + currentlyPlaying + '"]');
+      const prevRow = prevBtn ? prevBtn.closest('.song-row') : null;
+      if(prevAudio){ prevAudio.pause(); prevAudio.currentTime = 0; }
+      if(prevBtn){ prevBtn.classList.remove('playing'); prevBtn.innerHTML = '&#9654;'; }
+      if(prevRow){ prevRow.removeAttribute('data-playing'); }
+    }
+
+    if(audio.paused){
+      audio.play();
+      playBtn.classList.add('playing');
+      playBtn.innerHTML = '&#10073;&#10073;';
+      row.setAttribute('data-playing', 'true');
+      currentlyPlaying = songId;
+    } else {
+      audio.pause();
+      audio.currentTime = 0;
+      playBtn.classList.remove('playing');
+      playBtn.innerHTML = '&#9654;';
+      row.removeAttribute('data-playing');
+      currentlyPlaying = null;
+    }
+  }
+
+  function onSongEnded(songId){
+    const playBtn = document.querySelector('[data-song-play="' + songId + '"]');
+    if(playBtn){
+      playBtn.classList.remove('playing');
+      playBtn.innerHTML = '&#9654;';
+      const row = playBtn.closest('.song-row');
+      if(row){ row.removeAttribute('data-playing'); }
+    }
+    if(currentlyPlaying === songId){ currentlyPlaying = null; }
+  }
+
+  function chooseSong(songId){
+    document.getElementById('song').value = songId;
+
+    const nameEl = document.querySelector('.song-row[data-song="' + songId + '"] .song-row-name');
+    const name = nameEl ? nameEl.textContent.trim() : ('Song ' + songId);
+
+    document.getElementById('song-picker-label').textContent = name;
+    document.getElementById('song-picker-btn').classList.add('has-value');
+
+    document.querySelectorAll('.song-row').forEach(el => {
+      el.classList.toggle('selected', el.dataset.song === songId);
+    });
+
+    closeSongModal();
+  }
+
+  // ---------- Fullscreen theme preview (locked themes never open this) ----------
+  function openDesignModal(designId, position){
+    modalDesignKey = designId;
+    document.getElementById('design-fs-title').textContent = 'Theme ' + position;
+    document.getElementById('design-iframe').src = designPreviewUrls[designId] || 'about:blank';
+    document.getElementById('design-fs-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDesignModal(){
+    document.getElementById('design-fs-overlay').classList.remove('open');
+    document.getElementById('design-iframe').src = 'about:blank';
+    document.body.style.overflow = '';
+  }
+
+  function chooseDesign(){
+    const designId = modalDesignKey;
+    document.querySelectorAll('.design-box').forEach(el => {
+      el.classList.toggle('selected', el.dataset.design === designId);
+    });
+    document.getElementById('design').value = designId;
+    closeDesignModal();
+  }
+
+  function validateBeforeSubmit(){
+    const song = document.getElementById('song').value;
+    const design = document.getElementById('design').value;
+
+    if(!song){
+      alert('Please choose a song.');
+      return false;
+    }
+    if(!design){
+      alert('Please choose a theme.');
+      return false;
+    }
+    return true;
+  }
+
+  // Show the uploaded photo on the moon itself, instantly.
+  function updateFileName(input){
+    const visual = document.getElementById('file-visual');
+    const moon = document.getElementById('moon-visual');
+
+    if(input.files && input.files[0]){
+      visual.textContent = input.files[0].name;
+      const reader = new FileReader();
+      reader.onload = function(e){
+        moon.style.backgroundImage = "url('" + e.target.result + "')";
+        moon.classList.add('has-image');
+      };
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      visual.textContent = "Choose a photo to include";
+      moon.style.backgroundImage = '';
+      moon.classList.remove('has-image');
+    }
+  }
+
+  // A random-looking plot code, purely decorative.
+  function generatePlotNumber(){
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for(let i = 0; i < 8; i++){
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    document.getElementById('plot-number').textContent = 'LUNA-' + code;
+  }
+
+  // Cheap starfield: many soft dots painted via box-shadow on layers.
+  function paintStars(el, count, opacity){
+    const shadows = [];
+    for(let i = 0; i < count; i++){
+      const x = (Math.random() * 110).toFixed(2);
+      const y = (Math.random() * 110).toFixed(2);
+      shadows.push(x + 'vw ' + y + 'vh 0 rgba(243,239,228,' + opacity + ')');
+    }
+    el.style.boxShadow = shadows.join(',');
+  }
+
+  // Gentle parallax: the whole sky drifts slightly toward the cursor.
+  function initParallax(){
+    const sky = document.getElementById('sky-parallax');
+    window.addEventListener('mousemove', function(e){
+      const x = (e.clientX / window.innerWidth - 0.5) * 20;
+      const y = (e.clientY / window.innerHeight - 0.5) * 14;
+      sky.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    generatePlotNumber();
+    paintStars(document.getElementById('stars-small'), 130, 0.5);
+    paintStars(document.getElementById('stars-big'), 40, 0.8);
+    paintStars(document.getElementById('stars-twinkle'), 22, 0.9);
+    initParallax();
+  });
+</script>
+
+</body>
+</html>

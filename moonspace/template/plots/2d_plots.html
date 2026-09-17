@@ -1,0 +1,587 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Moonspace — Explore Every Gift</title>
+<style>
+  :root{
+    --bg-a:          #05070b;
+    --bg-b:          #0c1119;
+    --panel:         rgba(12,16,23,0.80);
+    --panel-border:  rgba(255,255,255,0.09);
+    --ink:           #f3efe6;
+    --ink-dim:       #99a1ab;
+    --ink-faint:     #565e69;
+    --accent:        #4da3ff;
+    --accent-deep:   #1c5fa8;
+    --rose:          #ff7a94;
+    --rose-deep:     #b23a56;
+    --line:          rgba(255,255,255,0.08);
+    --mono: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; user-select:none; -webkit-tap-highlight-color:transparent; }
+  html,body{ width:100%; height:100%; overflow:hidden; font-family:var(--sans); color:var(--ink); background:var(--bg-a); }
+
+  #viewport{
+    width:100vw; height:100vh; position:relative; overflow:hidden; cursor:grab; touch-action:none;
+    background:
+      radial-gradient(circle, rgba(255,255,255,0.16) 1px, transparent 1.3px) 0 0/40px 40px,
+      radial-gradient(ellipse at 50% 0%, rgba(77,163,255,0.07), transparent 60%),
+      linear-gradient(170deg, var(--bg-a), var(--bg-b));
+  }
+  #viewport:active{ cursor:grabbing; }
+  #world{ position:absolute; top:0; left:0; width:0; height:0; transform-origin:0 0; will-change:transform; }
+
+  .marker{ position:absolute; transform:translate(-50%,-100%); display:flex; flex-direction:column; align-items:center; cursor:pointer; pointer-events:auto; }
+  .marker .card{ width:46px; height:46px; border-radius:13px; background-size:cover; background-position:center; border:2px solid var(--accent); box-shadow:0 10px 22px -6px rgba(0,0,0,0.65), 0 0 0 4px rgba(77,163,255,0.16); transition:transform 0.15s ease, box-shadow 0.15s ease; }
+  .marker .tail{ width:9px; height:9px; background:var(--accent); margin-top:-5px; transform:rotate(45deg); border-radius:2px; }
+  .marker:hover .card{ transform:scale(1.1) translateY(-2px); box-shadow:0 14px 26px -6px rgba(0,0,0,0.7), 0 0 0 5px rgba(77,163,255,0.28); }
+  .marker .label{ position:absolute; bottom:calc(100% + 6px); font-size:10.5px; font-weight:600; color:var(--ink); background:rgba(12,16,23,0.92); border:1px solid var(--panel-border); padding:3px 9px; border-radius:20px; white-space:nowrap; pointer-events:none; transition:color 0.15s ease, border-color 0.15s ease; }
+  .marker.active .label{ color:var(--accent); border-color:rgba(77,163,255,0.5); }
+
+  .glass{ background:var(--panel); border:1px solid var(--panel-border); border-radius:16px; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); box-shadow:0 12px 28px -14px rgba(0,0,0,0.6); }
+
+  /* ---------- left stack: brand + search + list ---------- */
+  .stack{ position:fixed; top:18px; left:18px; z-index:900; width:320px; display:flex; flex-direction:column; gap:10px; max-width:calc(100vw - 36px); transition:transform 0.32s cubic-bezier(.34,1.1,.64,1), opacity 0.25s ease; }
+
+  .brand{ padding:13px 16px; }
+  .brand-top{ display:flex; align-items:center; gap:10px; }
+  .brand .mark{ width:28px; height:28px; border-radius:9px; flex:none; background:linear-gradient(155deg, #bfe0ff, var(--accent) 60%, var(--accent-deep)); box-shadow:0 0 14px rgba(77,163,255,0.4); }
+  .brand .name{ font-size:15px; font-weight:600; letter-spacing:0.2px; }
+  .brand .name b{ color:var(--accent); font-weight:700; }
+  .brand .sub{ font-size:10.5px; color:var(--ink-faint); margin-top:1px; }
+  .brand .stat{ display:flex; align-items:center; gap:7px; margin-top:10px; padding-top:10px; border-top:1px solid var(--line); font-size:11px; color:var(--ink-dim); }
+  .brand .stat b{ color:var(--accent); font-family:var(--mono); }
+  .brand .drawerclose{ display:none; }
+  .pulse{ width:6px; height:6px; border-radius:50%; background:var(--accent); flex:none; animation:pulse 1.8s ease-in-out infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:0.4; transform:scale(0.8); } 50%{ opacity:1; transform:scale(1.1); } }
+
+  .search-row{ display:flex; align-items:center; gap:8px; padding:11px 14px; }
+  .search-row svg{ flex:none; opacity:0.55; color:var(--ink-dim); }
+  .search-row input{ flex:1; min-width:0; background:transparent; border:none; outline:none; color:var(--ink); font-size:13px; font-family:var(--sans); }
+  .search-row input::placeholder{ color:var(--ink-faint); }
+  .search-row .hint{ font-size:10px; color:var(--ink-faint); font-family:var(--mono); border:1px solid var(--line); border-radius:5px; padding:2px 5px; flex:none; }
+
+  .panel-head{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px 8px 14px; cursor:pointer; }
+  .panel-head .t{ font-size:11px; letter-spacing:0.4px; color:var(--ink-dim); font-weight:600; }
+  .panel-head .count{ font-family:var(--mono); font-size:10.5px; color:#071726; background:var(--accent); padding:1px 8px; border-radius:20px; font-weight:600; }
+
+  .plot-list{ max-height:0; overflow:hidden; transition:max-height 0.3s ease; }
+  .plot-list.open{ max-height:360px; overflow-y:auto; }
+  .plot-list::-webkit-scrollbar{ width:5px; }
+  .plot-list::-webkit-scrollbar-thumb{ background:rgba(255,255,255,0.14); border-radius:10px; }
+
+  .plot-item{ display:flex; align-items:center; gap:10px; padding:10px 14px; cursor:pointer; border-top:1px solid var(--line); transition:background 0.15s ease; }
+  .plot-item:hover, .plot-item:active{ background:rgba(255,255,255,0.05); }
+  .plot-item .avatar{ width:28px; height:28px; border-radius:8px; background-size:cover; background-position:center; flex:none; border:1px solid var(--panel-border); }
+  .plot-item .info{ min-width:0; flex:1; }
+  .plot-item .owner{ font-size:12.5px; font-weight:500; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .plot-item .loc{ font-size:10.5px; color:var(--ink-faint); font-family:var(--mono); margin-top:1px; }
+  .plot-item .id{ font-size:9.5px; color:var(--ink-faint); font-family:var(--mono); flex:none; }
+  .no-results{ padding:16px 14px; font-size:12px; color:var(--ink-faint); text-align:center; }
+
+  .readout{ position:fixed; left:86px; bottom:18px; z-index:900; display:flex; flex-direction:column; gap:6px; font-family:var(--mono); pointer-events:none; }
+  .readout .row{ display:flex; align-items:center; gap:8px; background:var(--panel); border:1px solid var(--panel-border); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border-radius:9px; padding:6px 10px; font-size:10.5px; color:var(--ink-dim); width:max-content; }
+  .readout .row .dot{ width:5px; height:5px; border-radius:50%; background:var(--accent); flex:none; }
+
+  .zoomctl{ position:fixed; right:18px; bottom:18px; z-index:900; display:flex; flex-direction:column; background:var(--panel); border:1px solid var(--panel-border); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-radius:14px; overflow:hidden; box-shadow:0 12px 28px -14px rgba(0,0,0,0.6); }
+  .zoomctl button{ width:40px; height:38px; background:transparent; border:none; color:var(--ink); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:17px; font-weight:300; transition:background 0.15s ease, color 0.15s ease; }
+  .zoomctl button:hover{ background:rgba(255,255,255,0.07); color:var(--accent); }
+  .zoomctl .div{ height:1px; background:var(--line); margin:0 8px; }
+
+  .compassbtn{ position:fixed; right:18px; bottom:128px; z-index:900; width:40px; height:40px; border-radius:14px; background:var(--panel); border:1px solid var(--panel-border); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink-dim); box-shadow:0 12px 28px -14px rgba(0,0,0,0.6); transition:color 0.15s ease; }
+  .compassbtn:hover{ color:var(--accent); }
+
+  /* ---------- right stack: message card + always-visible gift CTA beneath it ---------- */
+  #rightStack{ position:fixed; right:18px; top:18px; z-index:960; width:290px; display:flex; flex-direction:column; gap:12px; }
+
+  #detail{ padding:0; opacity:0; max-height:0; pointer-events:none; transform:translateY(-8px) scale(0.97); transition:opacity 0.28s ease, transform 0.32s cubic-bezier(.34,1.56,.64,1), max-height 0.32s ease; overflow:hidden; }
+  #detail.open{ opacity:1; max-height:520px; pointer-events:auto; transform:translateY(0) scale(1); }
+  #detailContent{ transition:opacity 0.16s ease, transform 0.16s ease; }
+  #detailContent.swap{ opacity:0; transform:translateY(4px) scale(0.98); }
+  #detail .halo{ height:4px; background:linear-gradient(90deg, var(--accent-deep), var(--accent), var(--accent-deep)); }
+  #detail .inner{ padding:18px; }
+  #detail .head{ display:flex; align-items:center; gap:10px; padding-right:16px; }
+  #detail .avatar{ width:40px; height:40px; border-radius:12px; background-size:cover; background-position:center; border:2px solid var(--accent); box-shadow:0 0 0 3px rgba(77,163,255,0.16); flex:none; }
+  #detail .plotname{ font-size:15.5px; font-weight:700; color:var(--ink); }
+  #detail .owner{ font-size:11px; color:var(--ink-faint); margin-top:1px; }
+  #detail .close{ position:absolute; top:14px; right:14px; cursor:pointer; color:var(--ink-faint); font-size:14px; z-index:2; }
+  #detail .close:hover{ color:var(--accent); }
+  #detail .grid{ display:grid; grid-template-columns:auto 1fr; gap:6px 10px; font-size:11.5px; margin-top:14px; }
+  #detail .grid .k{ color:var(--ink-faint); }
+  #detail .grid .v{ color:var(--ink-dim); font-family:var(--mono); text-align:right; word-break:break-word; }
+  #detail .message{ margin-top:14px; padding-top:12px; border-top:1px dashed var(--line); font-size:12.5px; color:var(--ink); font-style:italic; line-height:1.55; }
+
+  /* ---------- gift CTA: its own container, always on screen, warm accent ---------- */
+  #giftCta{ padding:16px; position:relative; overflow:hidden; border-color:rgba(255,122,148,0.28); }
+  #giftCta::before{ content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 20% 0%, rgba(255,122,148,0.14), transparent 65%); pointer-events:none; }
+  .cta-hearts{ display:flex; gap:6px; color:var(--rose); }
+  .cta-hearts svg{ opacity:0.9; }
+  .cta-hearts svg:nth-child(2){ opacity:0.55; transform:translateY(1px) scale(0.85); }
+  .cta-hearts svg:nth-child(3){ opacity:0.35; transform:translateY(2px) scale(0.7); }
+  .cta-title{ margin-top:9px; font-size:13.5px; font-weight:700; color:var(--ink); line-height:1.35; }
+  .cta-text{ margin-top:5px; font-size:11.5px; line-height:1.5; color:var(--ink-dim); }
+  .cta-btn{ margin-top:12px; display:flex; align-items:center; justify-content:center; gap:7px; width:100%; padding:12px; border-radius:10px; background:linear-gradient(135deg, var(--rose), var(--rose-deep)); color:#fff; font-weight:700; font-size:12.5px; text-decoration:none; box-shadow:0 10px 22px -8px rgba(255,122,148,0.6); animation:ctaGlow 2.2s ease-in-out infinite; transition:transform 0.12s ease, box-shadow 0.15s ease; }
+  .cta-btn svg:last-child{ transition:transform 0.15s ease; }
+  .cta-btn:hover{ transform:translateY(-1px); box-shadow:0 14px 26px -6px rgba(255,122,148,0.75); }
+  .cta-btn:hover svg:last-child{ transform:translateX(3px); }
+  .cta-btn:active{ transform:translateY(0) scale(0.97); }
+  @keyframes ctaGlow{ 0%,100%{ box-shadow:0 10px 22px -8px rgba(255,122,148,0.6); } 50%{ box-shadow:0 10px 26px -4px rgba(255,122,148,0.9); } }
+
+  /* ---------- floating view-switcher, Apple-style FAB, bottom-left, above everything ---------- */
+  .viewSwitch{ position:fixed; left:18px; bottom:18px; z-index:1200; display:flex; flex-direction:column; align-items:flex-start; gap:10px; }
+  .vs-menu{ display:flex; flex-direction:column-reverse; gap:9px; }
+  .vs-item{ display:flex; align-items:center; gap:10px; padding:8px 18px 8px 8px; border-radius:26px; font-size:12.5px; font-weight:600; color:var(--ink); text-decoration:none; white-space:nowrap; background:var(--panel); border:1px solid var(--panel-border); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); box-shadow:0 12px 24px -12px rgba(0,0,0,0.65); opacity:0; transform:translateY(10px) scale(0.9); pointer-events:none; transition:opacity 0.22s ease, transform 0.3s cubic-bezier(.34,1.56,.64,1), border-color 0.15s ease, background 0.15s ease; }
+  .viewSwitch.open .vs-item{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
+  .viewSwitch.open .vs-item:nth-child(1){ transition-delay:0.09s; }
+  .viewSwitch.open .vs-item:nth-child(2){ transition-delay:0.045s; }
+  .viewSwitch.open .vs-item:nth-child(3){ transition-delay:0s; }
+  .vs-item:hover{ border-color:rgba(255,255,255,0.22); background:rgba(255,255,255,0.06); transform:translateX(2px); }
+  .vs-icon{ width:30px; height:30px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; color:#08131f; }
+  .vs-item.active{ border-color:rgba(255,122,148,0.5); box-shadow:0 12px 24px -10px rgba(255,122,148,0.45), 0 0 0 1px rgba(255,122,148,0.18) inset; }
+  .vs-fab{ width:52px; height:52px; border-radius:50%; background:var(--panel); border:1px solid var(--panel-border); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; color:var(--ink); cursor:pointer; box-shadow:0 14px 30px -12px rgba(0,0,0,0.75); transition:transform 0.2s cubic-bezier(.34,1.56,.64,1), background 0.2s ease, border-color 0.2s ease; }
+  .vs-fab:active{ transform:scale(0.92); }
+  .vs-fab svg{ transition:transform 0.25s ease; }
+  .viewSwitch.open .vs-fab{ background:var(--rose); border-color:var(--rose); }
+  .viewSwitch.open .vs-fab svg{ transform:rotate(135deg); }
+
+  .empty-state{ position:fixed; inset:0; z-index:700; display:flex; align-items:center; justify-content:center; text-align:center; padding:30px; }
+  .empty-state .card{ max-width:340px; padding:26px 22px; }
+  .empty-state h2{ font-size:16px; margin-bottom:8px; }
+  .empty-state p{ font-size:12.5px; color:var(--ink-dim); line-height:1.5; margin-bottom:16px; }
+
+  /* ---------- mobile: browse pill + gift pill share one row + drawer + bottom sheet ---------- */
+  .browsebtn{ display:none; }
+  .mobileTopBar{ display:none; }
+
+  @media (max-width:640px){
+    .stack{ top:0; left:0; right:0; width:auto; max-width:none; border-radius:0 0 20px 20px; transform:translateY(-100%); opacity:0; pointer-events:none; padding-bottom:6px; max-height:80vh; }
+    .stack.drawer-open{ transform:translateY(0); opacity:1; pointer-events:auto; }
+    .stack .brand{ border-radius:0; }
+    .brand .drawerclose{ display:block; position:absolute; top:14px; right:16px; color:var(--ink-faint); font-size:15px; cursor:pointer; }
+    .plot-list.open{ max-height:52vh; }
+
+    .mobileTopBar{ display:flex; position:fixed; top:16px; left:16px; right:16px; z-index:850; align-items:center; justify-content:space-between; gap:8px; }
+    .browsebtn{ display:flex; align-items:center; gap:7px; position:static; padding:10px 14px; border-radius:20px; font-size:12.5px; font-weight:600; color:var(--ink); flex:none; }
+    .browsebtn .count{ font-family:var(--mono); font-size:10.5px; color:#071726; background:var(--accent); padding:1px 7px; border-radius:20px; font-weight:700; }
+
+    #rightStack{ display:contents; }
+
+    #detail{ position:fixed; left:0; right:0; top:auto; bottom:0; width:auto; border-radius:20px 20px 0 0; max-height:52vh; display:flex; flex-direction:column; transform:translateY(100%); z-index:960; }
+    #detail.open{ max-height:52vh; transform:translateY(0); }
+    #detail .inner{ overflow-y:auto; }
+
+    #giftCta{ display:none; } /* replaced by the pill in .mobileTopBar */
+    .mobileTopBar .cta-btn{ width:auto; min-width:0; flex:0 1 auto; margin-top:0; padding:11px 15px; border-radius:22px; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; animation:none; border:1px solid rgba(255,255,255,0.28); box-shadow:0 10px 20px -8px rgba(255,122,148,0.7), inset 0 1px 0 rgba(255,255,255,0.25); }
+
+    .readout, .zoomctl, .compassbtn{ display:none; }
+    .viewSwitch{ bottom:16px; left:16px; z-index:1200; }
+  }
+</style>
+</head>
+<body>
+
+<div id="viewport">
+  <div id="world"></div>
+</div>
+
+<div class="mobileTopBar">
+  <div class="browsebtn glass" id="browseBtn">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    Browse gifts <span class="count" id="browseCount">{{ plots|length }}</span>
+  </div>
+  <a class="cta-btn" id="mobileGiftBtn" href="{% url 'buy_gift' %}">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.9-10.2-9.3C.2 8.6 1.5 5 5 4.2c2-.5 4 .3 5 2 1-1.7 3-2.5 5-2 3.5.8 4.8 4.4 3.2 7.5C19.5 16.1 12 21 12 21z"/></svg>
+    Gift the Moon
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+  </a>
+</div>
+
+<div class="stack" id="stack">
+  <div class="glass brand">
+    <span class="drawerclose" id="drawerClose">✕</span>
+    <div class="brand-top">
+      <div class="mark"></div>
+      <div>
+        <div class="name"><b>Moon</b>space</div>
+        <div class="sub">A little home for someone you love</div>
+      </div>
+    </div>
+    <div class="stat"><span class="pulse"></span><span>&nbsp;<b id="statCount">0</b> plots claimed so far — explore the sky</span></div>
+  </div>
+
+  <div class="glass">
+    <div class="search-row">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="search" type="text" placeholder="Search plots, buyers, or the one they gifted" autocomplete="off">
+      <span class="hint">↵</span>
+    </div>
+  </div>
+
+  <div class="glass">
+    <div class="panel-head" id="panelToggle">
+      <div class="t">MOON GIFTS</div>
+      <div class="count" id="plotCount">{{ plots|length }}</div>
+    </div>
+    <div class="plot-list open" id="plotList"></div>
+  </div>
+</div>
+
+<div id="rightStack">
+  <div id="detail" class="glass">
+    <div class="halo"></div>
+    <div class="inner">
+      <span class="close" id="detailClose">✕</span>
+      <div id="detailContent">
+        <div class="head">
+          <div class="avatar" id="dAvatar"></div>
+          <div>
+            <div class="plotname" id="dName"></div>
+            <div class="owner" id="dOwner"></div>
+          </div>
+        </div>
+        <div class="grid" id="dGrid"></div>
+        <div class="message" id="dMessage"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="giftCta" class="glass">
+    <div class="cta-hearts">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.9-10.2-9.3C.2 8.6 1.5 5 5 4.2c2-.5 4 .3 5 2 1-1.7 3-2.5 5-2 3.5.8 4.8 4.4 3.2 7.5C19.5 16.1 12 21 12 21z"/></svg>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.9-10.2-9.3C.2 8.6 1.5 5 5 4.2c2-.5 4 .3 5 2 1-1.7 3-2.5 5-2 3.5.8 4.8 4.4 3.2 7.5C19.5 16.1 12 21 12 21z"/></svg>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.9-10.2-9.3C.2 8.6 1.5 5 5 4.2c2-.5 4 .3 5 2 1-1.7 3-2.5 5-2 3.5.8 4.8 4.4 3.2 7.5C19.5 16.1 12 21 12 21z"/></svg>
+    </div>
+    <div class="cta-title">Bring the moon to someone you love</div>
+    <div class="cta-text">Gift the best surprise they'll ever receive — we're with you every step of the way.</div>
+    <a class="cta-btn" href="{% url 'buy_gift' %}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.9-10.2-9.3C.2 8.6 1.5 5 5 4.2c2-.5 4 .3 5 2 1-1.7 3-2.5 5-2 3.5.8 4.8 4.4 3.2 7.5C19.5 16.1 12 21 12 21z"/></svg>
+      Gift the Moon
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+  </div>
+</div>
+
+<div class="readout">
+  <div class="row"><span class="dot"></span><span id="coordText">x 0, y 0</span></div>
+  <div class="row"><span class="dot"></span><span id="zoomText">zoom 100%</span></div>
+</div>
+
+<div class="compassbtn" id="recenter" title="Reset view">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/></svg>
+</div>
+
+<div class="zoomctl">
+  <button id="zin">+</button>
+  <div class="div"></div>
+  <button id="zout">−</button>
+</div>
+
+{# Bottom-left view switcher, wired to your urls.py — 2D is the active view on this page #}
+<div class="viewSwitch" id="viewSwitch">
+  <div class="vs-menu" id="vsMenu">
+    <a class="vs-item active" href="{% url 'plot_2d' %}">
+      <span class="vs-icon" style="background:linear-gradient(155deg,#bfe0ff,#4da3ff 60%,#1c5fa8);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/></svg>
+      </span>
+      2D View
+    </a>
+    <a class="vs-item" href="{% url 'plot_3d' %}">
+      <span class="vs-icon" style="background:linear-gradient(155deg,#ffd7de,#ff7a94 60%,#b23a56);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><ellipse cx="12" cy="12" rx="8" ry="3.2"/></svg>
+      </span>
+      3D View
+    </a>
+    <a class="vs-item" href="{% url 'plot_view' %}">
+      <span class="vs-icon" style="background:linear-gradient(155deg,#ffe9b8,#f0b84c 60%,#a5731c);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      </span>
+      Plot View
+    </a>
+  </div>
+  <button class="vs-fab" id="vsFab" title="Switch view" aria-label="Switch view">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+</div>
+
+{% if not plots %}
+<div class="empty-state">
+  <div class="glass card">
+    <h2>No moon gifts yet 🌙</h2>
+    <p>Be the first to write someone's name across the sky.</p>
+    <a class="cta-btn" href="{% url 'buy_gift' %}" style="margin-top:0;">Gift the first plot</a>
+  </div>
+</div>
+{% endif %}
+
+<script>
+(function(){
+
+  /* ---------- real plots, straight from the backend, no placeholders ---------- */
+  var plots = [
+    {% for plot in plots %}
+    {
+      id: "{{ plot.plot_number|escapejs }}",
+      plotName: "{{ plot.plot_number|escapejs }}",
+      owner: "{{ plot.buyer_name|escapejs }}",
+      giftTo: "{{ plot.receiver_name|default:''|escapejs }}",
+      message: "{{ plot.message|default:''|escapejs }}",
+      song: "{{ plot.song|default:''|escapejs }}",
+      design: "{{ plot.design|default:''|escapejs }}",
+      wantsReply: "{{ plot.wants_reply|yesno:'Yes,No'|escapejs }}",
+      email: "{{ plot.email|default:''|escapejs }}",
+      url: "{{ plot.url|default:''|escapejs }}",
+      photo: "{% if plot.image %}{{ plot.image.url|escapejs }}{% endif %}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  /* deterministic world position derived from each plot's own id — nothing random or fake */
+  function hash(str){ var h=0; for(var i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))|0; } return Math.abs(h); }
+  function initialsAvatar(name){
+    var letter = (name.trim()[0] || '?').toUpperCase();
+    var c = document.createElement('canvas'); c.width = 96; c.height = 96;
+    var ctx = c.getContext('2d');
+    var g = ctx.createLinearGradient(0,0,96,96);
+    g.addColorStop(0,'#ffd7de'); g.addColorStop(1,'#b23a56');
+    ctx.fillStyle = g; ctx.fillRect(0,0,96,96);
+    ctx.fillStyle = '#fff'; ctx.font = '700 44px Inter, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(letter, 48, 52);
+    return c.toDataURL();
+  }
+  plots.forEach(function(p){
+    var h = hash(p.id || p.plotName || 'moon');
+    p.x = (h % 1600) - 800;
+    p.y = ((h>>4) % 1600) - 800;
+    if(!p.photo){ p.photo = initialsAvatar(p.owner || '?'); }
+  });
+
+  var isMobile = window.matchMedia('(max-width:640px)').matches;
+
+  var viewport = document.getElementById('viewport');
+  var world = document.getElementById('world');
+
+  var scale = 0.6, panX = window.innerWidth/2, panY = window.innerHeight/2;
+  var isDragging = false, startX = 0, startY = 0;
+  var MIN_SCALE = 0.2, MAX_SCALE = 3;
+
+  function updateTransform(){
+    world.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + scale + ')';
+    viewport.style.backgroundPosition = panX + 'px ' + panY + 'px, 0 0, 0 0';
+    viewport.style.backgroundSize = (40*scale) + 'px ' + (40*scale) + 'px, auto, auto';
+    var zt = document.getElementById('zoomText'); if(zt) zt.textContent = 'zoom ' + Math.round(scale*100) + '%';
+  }
+
+  function animateTo(tx, ty, ts){
+    var sx=panX, sy=panY, ss=scale, t0=performance.now(), dur=550;
+    function step(now){
+      var t = Math.min(1, (now-t0)/dur), e = 1-Math.pow(1-t,3);
+      panX = sx+(tx-sx)*e; panY = sy+(ty-sy)*e; scale = ss+(ts-ss)*e;
+      updateTransform();
+      if(t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  viewport.addEventListener('mousedown', function(e){
+    if(blockedTouch(e.target)) return;
+    isDragging = true; startX = e.clientX - panX; startY = e.clientY - panY;
+  });
+  window.addEventListener('mousemove', function(e){
+    if(!isDragging) return;
+    panX = e.clientX - startX; panY = e.clientY - startY;
+    updateTransform();
+  });
+  window.addEventListener('mouseup', function(){ isDragging = false; });
+
+  function blockedTouch(t){ return t.closest('.stack') || t.closest('#rightStack') || t.closest('.zoomctl') || t.closest('.compassbtn') || t.closest('.mobileTopBar') || t.closest('.viewSwitch') || t.closest('.marker'); }
+
+  /* ---------- touch panning + pinch-to-zoom ---------- */
+  var activePinch = null;
+  function touchDist(t){ var dx=t[0].clientX-t[1].clientX, dy=t[0].clientY-t[1].clientY; return Math.sqrt(dx*dx+dy*dy); }
+  function touchMid(t){ return { x:(t[0].clientX+t[1].clientX)/2, y:(t[0].clientY+t[1].clientY)/2 }; }
+
+  viewport.addEventListener('touchstart', function(e){
+    if(blockedTouch(e.target)) return;
+    if(e.touches.length === 2){
+      isDragging = false;
+      activePinch = { dist: touchDist(e.touches), scale: scale, mid: touchMid(e.touches), panX: panX, panY: panY };
+    } else if(e.touches.length === 1){
+      activePinch = null;
+      isDragging = true; startX = e.touches[0].clientX - panX; startY = e.touches[0].clientY - panY;
+    }
+  }, { passive:true });
+
+  viewport.addEventListener('touchmove', function(e){
+    if(e.touches.length === 2 && activePinch){
+      e.preventDefault();
+      var nd = touchDist(e.touches);
+      var ns = Math.min(Math.max(activePinch.scale * (nd/activePinch.dist), MIN_SCALE), MAX_SCALE);
+      var mid = touchMid(e.touches);
+      panX = mid.x - (activePinch.mid.x - activePinch.panX) * (ns/activePinch.scale);
+      panY = mid.y - (activePinch.mid.y - activePinch.panY) * (ns/activePinch.scale);
+      scale = ns;
+      updateTransform();
+      return;
+    }
+    if(!isDragging || e.touches.length !== 1) return;
+    panX = e.touches[0].clientX - startX; panY = e.touches[0].clientY - startY;
+    updateTransform(); e.preventDefault();
+  }, { passive:false });
+
+  viewport.addEventListener('touchend', function(e){
+    if(e.touches.length < 2) activePinch = null;
+    if(e.touches.length === 0) isDragging = false;
+  });
+
+  viewport.addEventListener('wheel', function(e){
+    e.preventDefault();
+    var ns = Math.min(Math.max(scale - e.deltaY*0.0012, MIN_SCALE), MAX_SCALE);
+    panX = e.clientX - (e.clientX-panX)*(ns/scale);
+    panY = e.clientY - (e.clientY-panY)*(ns/scale);
+    scale = ns; updateTransform();
+  }, { passive:false });
+
+  function zoomBy(amount){
+    var ns = Math.min(Math.max(scale+amount, MIN_SCALE), MAX_SCALE);
+    var cx = window.innerWidth/2, cy = window.innerHeight/2;
+    panX = cx-(cx-panX)*(ns/scale); panY = cy-(cy-panY)*(ns/scale);
+    scale = ns; updateTransform();
+  }
+  document.getElementById('zin').addEventListener('click', function(){ zoomBy(0.25); });
+  document.getElementById('zout').addEventListener('click', function(){ zoomBy(-0.25); });
+  document.getElementById('recenter').addEventListener('click', function(){ animateTo(window.innerWidth/2, window.innerHeight/2, 0.6); });
+
+  var coordText = document.getElementById('coordText');
+  viewport.addEventListener('mousemove', function(e){
+    if(coordText) coordText.textContent = 'x ' + Math.round((e.clientX-panX)/scale) + ', y ' + Math.round((e.clientY-panY)/scale);
+  });
+
+  var markerEls = {};
+  plots.forEach(function(p){
+    var m = document.createElement('div');
+    m.className = 'marker';
+    m.style.left = p.x + 'px'; m.style.top = p.y + 'px';
+    m.innerHTML = '<span class="label">' + p.plotName + '</span><div class="card" style="background-image:url(' + p.photo + ')"></div><div class="tail"></div>';
+    m.addEventListener('click', function(){ focusPlot(p); });
+    world.appendChild(m);
+    markerEls[p.id] = m;
+  });
+
+  /* ---------- mobile drawer for the search + list panel ---------- */
+  var stack = document.getElementById('stack');
+  var browseBtn = document.getElementById('browseBtn');
+  function openDrawer(){ stack.classList.add('drawer-open'); }
+  function closeDrawer(){ stack.classList.remove('drawer-open'); }
+  browseBtn.addEventListener('click', function(){ stack.classList.contains('drawer-open') ? closeDrawer() : openDrawer(); });
+  document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+
+  /* ---------- detail card, built only from fields that actually exist ---------- */
+  var detail = document.getElementById('detail');
+  var detailContent = document.getElementById('detailContent');
+  function fillDetail(p){
+    document.getElementById('dAvatar').style.backgroundImage = 'url(' + p.photo + ')';
+    document.getElementById('dName').textContent = p.plotName;
+    document.getElementById('dOwner').textContent = 'from ' + p.owner;
+
+    var rows = [
+      ['Gift to', p.giftTo], ['Wants reply', p.wantsReply], ['Email', p.email], ['Link', p.url]
+    ].filter(function(r){ return r[1]; });
+
+    document.getElementById('dGrid').innerHTML = rows.map(function(r){
+      return '<div class="k">' + r[0] + '</div><div class="v">' + r[1] + '</div>';
+    }).join('');
+
+    document.getElementById('dMessage').textContent = p.message ? '\u201C' + p.message + '\u201D' : '';
+  }
+  function showDetail(p){
+    if(detail.classList.contains('open')){
+      detailContent.classList.add('swap');
+      setTimeout(function(){ fillDetail(p); detailContent.classList.remove('swap'); }, 150);
+    } else {
+      fillDetail(p);
+      detail.classList.add('open');
+    }
+  }
+  document.getElementById('detailClose').addEventListener('click', function(){
+    detail.classList.remove('open');
+    Object.keys(markerEls).forEach(function(id){ markerEls[id].classList.remove('active'); });
+  });
+
+  function focusPlot(p){
+    animateTo(window.innerWidth/2 - p.x*1.3, window.innerHeight/2 - p.y*1.3, 1.3);
+    showDetail(p);
+    Object.keys(markerEls).forEach(function(id){ markerEls[id].classList.toggle('active', id===p.id); });
+    if(isMobile) closeDrawer();
+  }
+
+  var listEl = document.getElementById('plotList');
+  var countEl = document.getElementById('plotCount');
+  function renderList(filtered){
+    listEl.innerHTML = '';
+    countEl.textContent = filtered.length;
+    if(!filtered.length){ listEl.innerHTML = '<div class="no-results">' + (plots.length ? 'No plots match that search.' : 'No moon gifts yet — be the first to send one.') + '</div>'; return; }
+    filtered.forEach(function(p){
+      var row = document.createElement('div');
+      row.className = 'plot-item';
+      row.innerHTML = '<div class="avatar" style="background-image:url(' + p.photo + ')"></div><div class="info"><div class="owner">' + p.plotName + '</div><div class="loc">Gift to ' + (p.giftTo || 'someone special') + '</div></div><div class="id">' + p.id + '</div>';
+      row.addEventListener('click', function(){ focusPlot(p); });
+      listEl.appendChild(row);
+    });
+  }
+  renderList(plots);
+  document.getElementById('panelToggle').addEventListener('click', function(){ listEl.classList.toggle('open'); });
+
+  var searchInput = document.getElementById('search');
+  function matches(p, q){ return (p.owner+p.giftTo+p.plotName+p.id).toLowerCase().indexOf(q)>-1; }
+  searchInput.addEventListener('input', function(){
+    var q = searchInput.value.trim().toLowerCase();
+    renderList(q ? plots.filter(function(p){ return matches(p,q); }) : plots);
+  });
+  searchInput.addEventListener('keydown', function(e){
+    if(e.key !== 'Enter') return;
+    var q = searchInput.value.trim().toLowerCase();
+    if(!q) return;
+    var hit = plots.find(function(p){ return matches(p,q); });
+    if(hit){ focusPlot(hit); searchInput.blur(); }
+  });
+
+  (function countUp(){
+    var el = document.getElementById('statCount'), t0 = performance.now(), dur = 900;
+    function step(now){
+      var t = Math.min(1, (now-t0)/dur);
+      el.textContent = Math.round(plots.length * (1-Math.pow(1-t,3)));
+      if(t < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  })();
+
+  var viewSwitch = document.getElementById('viewSwitch');
+  document.getElementById('vsFab').addEventListener('click', function(e){
+    e.stopPropagation();
+    viewSwitch.classList.toggle('open');
+  });
+  document.addEventListener('click', function(e){
+    if(viewSwitch.classList.contains('open') && !viewSwitch.contains(e.target)){ viewSwitch.classList.remove('open'); }
+  });
+
+  if(plots.length){
+    var randomPlot = plots[Math.floor(Math.random() * plots.length)];
+    fillDetail(randomPlot);
+    detail.classList.add('open');
+    markerEls[randomPlot.id].classList.add('active');
+  } else {
+    document.getElementById('giftCta').style.display = 'none';
+    document.getElementById('rightStack').style.display = 'none';
+  }
+
+  updateTransform();
+})();
+</script>
+</body>
+</html>
